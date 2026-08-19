@@ -59,6 +59,7 @@ public sealed class JsonSettingsService : ISettingsService
         {
             VisualProfileVersion = DockSettings.CurrentVisualProfileVersion
         };
+        DockSettings.ApplyAjDefaultCustomization(settings);
         var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

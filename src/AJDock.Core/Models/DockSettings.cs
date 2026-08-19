@@ -43,6 +43,40 @@ public sealed class DockSettings
     public int VisualProfileVersion { get; set; }
     public List<PinnedApp> PinnedApps { get; set; } = [];
 
+    public static void ApplyAjDefaultCustomization(DockSettings settings)
+    {
+        settings.Position = DockPosition.Bottom;
+        settings.IconSize = 30;
+        settings.DockSize = 104;
+        settings.IconSpacing = 25;
+        settings.MagnificationAmount = 2;
+        settings.AnimationSpeed = 50;
+        settings.Transparency = 0;
+        settings.BlurAmount = 24;
+        settings.CornerRadius = 16;
+        settings.BorderOpacity = 0;
+        settings.ShadowIntensity = 0.18;
+        settings.DockOffset = 8;
+        settings.AudioVisualizerSensitivity = 1.1528795811518326;
+        settings.AudioLineBaseHex = "#FFFFFF";
+        settings.AudioLineAccentHex = "#93F7FF";
+        settings.DockColorHex = "#0C1219";
+        settings.ThemeName = "Minimal Dark";
+        settings.ClockDisplayMode = ClockDisplayMode.DateAndTime;
+        settings.Use24HourClock = false;
+        settings.ShowSeconds = false;
+        settings.DateFormat = "ddd, MMM d";
+        settings.ClockSeparator = ClockSeparator.Bullet;
+        settings.ShowSystemStatusIcons = false;
+        settings.AutoHide = false;
+        settings.AlwaysOnTop = true;
+        settings.HideWindowsTaskbar = true;
+        settings.StartWithWindows = true;
+        settings.DockTakeoverMode = true;
+        settings.VisualProfileVersion = CurrentVisualProfileVersion;
+        settings.Normalize();
+    }
+
     [JsonIgnore]
     public double ClampedIconSize => Math.Clamp(IconSize, MinIconSize, MaxIconSize);
 

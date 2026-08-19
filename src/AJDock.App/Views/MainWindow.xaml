@@ -806,7 +806,7 @@
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                             <Button Width="28"
                                     Height="28"
-                                    Style="{StaticResource IconButtonStyle}"
+                                    Style="{StaticResource AnimatedMediaButtonStyle}"
                                     Command="{Binding SpotifyPreviousCommand}"
                                     ToolTip="Previous">
                                 <TextBlock Text="&#xE892;" FontFamily="Segoe Fluent Icons" Foreground="#EFFFF5" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -814,16 +814,39 @@
                             <Button Width="32"
                                     Height="30"
                                     Margin="3,0"
-                                    Style="{StaticResource IconButtonStyle}"
+                                    Style="{StaticResource AnimatedMediaButtonStyle}"
                                     Command="{Binding SpotifyPlayPauseCommand}"
-                                    ToolTip="Play / Pause">
-                                <Border Width="30" Height="28" CornerRadius="14" Background="#E81DB954">
-                                    <TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons" Foreground="#07100B" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    ToolTip="{Binding MediaPlayPauseToolTip}">
+                                <Border Width="30" Height="28" CornerRadius="14" Background="#E81DB954" RenderTransformOrigin="0.5,0.5">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </Border.RenderTransform>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMediaPlaying}" Value="True">
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard Name="MediaPlayingPulse">
+                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" To="1.08" Duration="0:0:0.72" />
+                                                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1.08" Duration="0:0:0.72" />
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.86" Duration="0:0:0.72" />
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="MediaPlayingPulse" />
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding MediaPlayPauseGlyph}" FontFamily="Segoe Fluent Icons" Foreground="#07100B" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                             </Button>
                             <Button Width="28"
                                     Height="28"
-                                    Style="{StaticResource IconButtonStyle}"
+                                    Style="{StaticResource AnimatedMediaButtonStyle}"
                                     Command="{Binding SpotifyNextCommand}"
                                     ToolTip="Next">
                                 <TextBlock Text="&#xE893;" FontFamily="Segoe Fluent Icons" Foreground="#EFFFF5" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />

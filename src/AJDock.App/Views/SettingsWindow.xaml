@@ -377,12 +377,32 @@
                                        TextAlignment="Right" />
                         </Grid>
 
+                        <Border Height="1" Background="#255A6D7E" Margin="0,12,0,12" />
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="AJ Default Baseline" FontSize="15" FontWeight="SemiBold" />
+                                <TextBlock Text="Restore layout, visuals, behavior, clock, and audio line to your base setup."
+                                           Foreground="{StaticResource MutedBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,18,0" />
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="Restore Defaults"
+                                    Style="{StaticResource ApplyButton}"
+                                    Command="{Binding RestoreAjDefaultsCommand}"
+                                    VerticalAlignment="Center" />
+                        </Grid>
+
                         <CheckBox Content="Auto Hide" IsChecked="{Binding AutoHide, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <CheckBox Content="Always On Top" IsChecked="{Binding AlwaysOnTop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <CheckBox Content="Hide Windows Taskbar" IsChecked="{Binding HideWindowsTaskbar, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <Border Height="1" Background="#255A6D7E" Margin="0,20,0,16" />
+                        <Border Height="1" Background="#255A6D7E" Margin="0,16,0,14" />
                         <TextBlock Text="Date &amp; Time" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12" />
 
                         <UniformGrid Columns="2" Rows="3">
@@ -613,7 +633,13 @@
                             </Grid>
                             <Slider Minimum="0" Maximum="96" TickFrequency="2" Value="{Binding DockOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Button Content="Apply" Style="{StaticResource ApplyButton}" HorizontalAlignment="Right" Margin="0,18,0,0" Click="Close_Click" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                                <Button Content="Restore Defaults"
+                                        Style="{StaticResource ApplyButton}"
+                                        Command="{Binding RestoreAjDefaultsCommand}"
+                                        Margin="0,0,8,0" />
+                                <Button Content="Apply" Style="{StaticResource ApplyButton}" Click="Close_Click" />
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>

@@ -13,6 +13,7 @@ public sealed class SettingsViewModel : ObservableObject
         ToggleDockTakeoverModeCommand = new RelayCommand(_ => ToggleDockTakeoverMode());
         SetDockColorCommand = new RelayCommand(SetDockColor);
         ApplyThemePresetCommand = new RelayCommand(ApplyThemePreset);
+        RestoreAjDefaultsCommand = new RelayCommand(_ => RestoreAjDefaults());
     }
 
     public DockSettings Settings { get; }
@@ -26,6 +27,7 @@ public sealed class SettingsViewModel : ObservableObject
     public RelayCommand ToggleDockTakeoverModeCommand { get; }
     public RelayCommand SetDockColorCommand { get; }
     public RelayCommand ApplyThemePresetCommand { get; }
+    public RelayCommand RestoreAjDefaultsCommand { get; }
 
     public DockPosition Position
     {
@@ -423,6 +425,13 @@ public sealed class SettingsViewModel : ObservableObject
         NotifyAppearancePropertiesChanged();
     }
 
+    private void RestoreAjDefaults()
+    {
+        DockSettings.ApplyAjDefaultCustomization(Settings);
+        Save();
+        NotifyAllPropertiesChanged();
+    }
+
     private void ApplyDockTakeoverPreset()
     {
         Settings.HideWindowsTaskbar = true;
@@ -464,6 +473,35 @@ public sealed class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(CornerRadius));
         OnPropertyChanged(nameof(ShadowIntensity));
         OnPropertyChanged(nameof(AudioVisualizerSensitivity));
+    }
+
+    private void NotifyAllPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(Position));
+        OnPropertyChanged(nameof(IconSize));
+        OnPropertyChanged(nameof(DockSize));
+        OnPropertyChanged(nameof(IconSpacing));
+        OnPropertyChanged(nameof(MagnificationAmount));
+        OnPropertyChanged(nameof(AnimationSpeed));
+        OnPropertyChanged(nameof(Transparency));
+        OnPropertyChanged(nameof(BlurAmount));
+        OnPropertyChanged(nameof(CornerRadius));
+        OnPropertyChanged(nameof(BorderOpacity));
+        OnPropertyChanged(nameof(ShadowIntensity));
+        OnPropertyChanged(nameof(DockOffset));
+        OnPropertyChanged(nameof(AudioVisualizerSensitivity));
+        OnPropertyChanged(nameof(ThemeName));
+        OnPropertyChanged(nameof(DockColorHex));
+        OnPropertyChanged(nameof(ClockDisplayMode));
+        OnPropertyChanged(nameof(Use24HourClock));
+        OnPropertyChanged(nameof(ShowSeconds));
+        OnPropertyChanged(nameof(DateFormat));
+        OnPropertyChanged(nameof(ClockSeparator));
+        OnPropertyChanged(nameof(AutoHide));
+        OnPropertyChanged(nameof(AlwaysOnTop));
+        OnPropertyChanged(nameof(HideWindowsTaskbar));
+        OnPropertyChanged(nameof(StartWithWindows));
+        NotifyTakeoverPropertiesChanged();
     }
 
     private void Save()

@@ -78,7 +78,8 @@ public partial class App : Application
                 new NotificationBadgeService(),
                 new SystemMonitorService(),
                 new WeatherService(),
-                new ArtworkLookupService());
+                new ArtworkLookupService(),
+                new MediaSessionService());
 
             var window = new MainWindow(viewModel, new WindowEffectService(), snapshotPath);
             _dockWindow = window;

@@ -33,6 +33,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private readonly SystemMonitorService _systemMonitorService;
     private readonly WeatherService _weatherService;
     private readonly ArtworkLookupService _artworkLookupService;
+    private readonly MediaSessionService _mediaSessionService;
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _clockTimer;
     private readonly DispatcherTimer _systemStatusTimer;
@@ -71,6 +72,8 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private string _spotifyLyricsText = "Spotify has synced lyrics for many tracks. Open Spotify to view the live lyrics panel.";
     private string _spotifySearchQuery = "Spotify lyrics";
     private ImageSource? _spotifyArtwork;
+    private bool _isMediaPlaying;
+    private bool _isMediaStateRefreshRunning;
     private bool _isSpotifyMetadataRefreshRunning;
     private string _spotifyArtworkLookupKey = string.Empty;
     private RunningAppInfo? _spotifyWindow;
@@ -96,7 +99,8 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         NotificationBadgeService notificationBadgeService,
         SystemMonitorService systemMonitorService,
         WeatherService weatherService,
-        ArtworkLookupService artworkLookupService)
+        ArtworkLookupService artworkLookupService,
+        MediaSessionService mediaSessionService)
     {
         _settingsService = settingsService;
         _applicationLauncher = applicationLauncher;
@@ -117,6 +121,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         _systemMonitorService = systemMonitorService;
         _weatherService = weatherService;
         _artworkLookupService = artworkLookupService;
+        _mediaSessionService = mediaSessionService;
 
         Settings = _settingsService.Load();
         Settings.StartWithWindows = _startupService.IsEnabled();
@@ -162,7 +167,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         ToggleEditModeCommand = new RelayCommand(_ => ToggleEditMode());
         RemoveDockItemCommand = new RelayCommand(parameter => ExecuteForItem(parameter, RemoveDockItem));
         SpotifyPreviousCommand = new RelayCommand(_ => SendMediaKey(NativeMethods.VkMediaPreviousTrack));
-        SpotifyPlayPauseCommand = new RelayCommand(_ => SendMediaKey(NativeMethods.VkMediaPlayPause));
+        SpotifyPlayPauseCommand = new RelayCommand(_ => ToggleMediaPlayback());
         SpotifyNextCommand = new RelayCommand(_ => SendMediaKey(NativeMethods.VkMediaNextTrack));
         OpenSpotifyLyricsCommand = new RelayCommand(_ => { });
         OpenBrowserWindowCommand = new RelayCommand(parameter => ExecuteForItem(parameter, item => LaunchWithArguments(item, "--new-window")), parameter => parameter is DockItemViewModel item && item.IsBrowser);
@@ -377,6 +382,23 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         get => _spotifyArtwork;
         private set => SetProperty(ref _spotifyArtwork, value);
     }
+
+    public bool IsMediaPlaying
+    {
+        get => _isMediaPlaying;
+        private set
+        {
+            if (SetProperty(ref _isMediaPlaying, value))
+            {
+                OnPropertyChanged(nameof(MediaPlayPauseGlyph));
+                OnPropertyChanged(nameof(MediaPlayPauseToolTip));
+            }
+        }
+    }
+
+    public string MediaPlayPauseGlyph => IsMediaPlaying ? "\uE769" : "\uE768";
+
+    public string MediaPlayPauseToolTip => IsMediaPlaying ? "Pause" : "Play";
 
     public bool IsSpeedTestRunning
     {
@@ -598,6 +620,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
             .GroupBy(app => app.NormalizedExecutablePath, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<RunningAppInfo>)group.ToList(), StringComparer.OrdinalIgnoreCase);
         RefreshSpotifyStatus(running.Values.SelectMany(apps => apps));
+        _ = RefreshMediaPlaybackStateAsync();
 
         var pinnedCounts = Settings.PinnedApps
             .GroupBy(StackKey, StringComparer.OrdinalIgnoreCase)
@@ -1222,6 +1245,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         if (!IsSpotifyActive)
         {
             _spotifyWindow = null;
+            IsMediaPlaying = false;
             SpotifyTrackText = "Spotify";
             SpotifyArtistText = "Spotify";
             SpotifyAlbumText = "Not playing";
@@ -1308,6 +1332,24 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         }
     }
 
+    private async Task RefreshMediaPlaybackStateAsync()
+    {
+        if (_isMediaStateRefreshRunning)
+        {
+            return;
+        }
+
+        _isMediaStateRefreshRunning = true;
+        try
+        {
+            IsMediaPlaying = IsSpotifyActive && await _mediaSessionService.IsAnyMediaPlayingAsync();
+        }
+        finally
+        {
+            _isMediaStateRefreshRunning = false;
+        }
+    }
+
     private static bool IsSpotifyWindow(RunningAppInfo app)
     {
         return app.ExecutablePath.Contains("Spotify", StringComparison.OrdinalIgnoreCase)
@@ -1364,6 +1406,18 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     {
         NativeMethods.keybd_event(virtualKey, 0, 0, 0);
         NativeMethods.keybd_event(virtualKey, 0, NativeMethods.KeyeventfKeyUp, 0);
+    }
+
+    private void ToggleMediaPlayback()
+    {
+        SendMediaKey(NativeMethods.VkMediaPlayPause);
+        IsMediaPlaying = !IsMediaPlaying;
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(450);
+            var refreshTask = await Application.Current.Dispatcher.InvokeAsync(RefreshMediaPlaybackStateAsync);
+            await refreshTask;
+        });
     }
 
     private void LaunchWithArguments(DockItemViewModel item, string arguments)
