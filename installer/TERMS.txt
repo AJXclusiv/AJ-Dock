@@ -1,0 +1,35 @@
+AJ Dock Beta Test Terms
+
+Last updated: August 18, 2026
+
+These terms apply to early private test builds of AJ Dock.
+
+1. Private beta software
+
+AJ Dock is provided as pre-release beta software for invited testers. It may contain bugs, incomplete features, visual issues, performance issues, or behavior that changes between releases.
+
+2. Permission to use
+
+You may install and use AJ Dock on your own Windows computer for personal testing. Do not sell, repackage, or publicly redistribute private beta builds without permission from the AJ Dock project owner.
+
+3. Desktop and taskbar behavior
+
+AJ Dock includes options that can hide or replace parts of the normal Windows taskbar experience. These settings are intended to be reversible, but testers should understand that desktop shell customization can temporarily affect normal Windows navigation until AJ Dock is closed or settings are restored.
+
+4. No warranty
+
+AJ Dock is provided "as is" without warranties of any kind. Use it at your own risk. The project owner is not responsible for lost time, lost data, interrupted workflows, system configuration issues, or other damages caused by installing, using, or uninstalling this beta software.
+
+5. Settings and local data
+
+AJ Dock stores settings locally in your Windows user profile. Uninstalling the app may leave personal dock settings behind so they can be reused by future builds.
+
+6. Feedback
+
+If you send feedback, bug reports, screenshots, ideas, or feature requests, you allow the AJ Dock project owner to use that feedback to improve the app.
+
+7. Updates
+
+Beta builds may change, remove, or reset features and settings. Install only builds you trust from the official private GitHub release page or directly from the project owner.
+
+By installing or using AJ Dock, you agree to these beta test terms.

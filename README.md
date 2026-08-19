@@ -15,7 +15,7 @@ The goal is simple: make a desktop dock that feels polished, fast, personal, and
 - Detect running applications and show an indicator under matching pinned apps
 - Activate or minimize running applications from the dock
 - Context menu actions: open, run as administrator, unpin, open file location, choose custom icon, close application
-- JSON settings persistence at `%APPDATA%\AJ Dock\settings.json`
+- JSON settings persistence at `%LOCALAPPDATA%\AJDock\settings.json`
 - Auto-hide, always-on-top, hide Windows taskbar, and start-with-Windows settings
 - Single-instance guard
 - Taskbar restoration on normal exit and handled crashes
@@ -54,6 +54,11 @@ dotnet run --project .\src\AJDock.App\AJDock.App.csproj -c Release
 
 ## Publish A Windows Build
 
+AJ Dock currently supports two release formats:
+
+- Portable zip: extract and run `AJDock.exe`.
+- Windows installer: guided install with beta terms, Start Menu shortcut, optional desktop shortcut, and uninstall entry.
+
 To create a shareable Windows x64 zip:
 
 ```powershell
@@ -63,27 +68,54 @@ To create a shareable Windows x64 zip:
 The zip is written to:
 
 ```text
-dist\AJDock-v0.1.0-win-x64.zip
+dist\AJDock-v0.1.1-win-x64.zip
 ```
 
-Share that zip with friends/family or upload it to a GitHub Release.
+To create a Windows installer, install Inno Setup 6 and run:
+
+```powershell
+.\scripts\build-installer.ps1 -Version 0.1.1
+```
+
+The installer is written to:
+
+```text
+dist\installer\AJDockSetup-v0.1.1-win-x64.exe
+```
+
+Upload the zip and/or installer to a GitHub Release.
 
 ## Install
+
+Portable:
 
 1. Download the latest `AJDock-*-win-x64.zip` from Releases.
 2. Extract the zip.
 3. Run `AJDock.exe`.
-4. Windows SmartScreen may warn because early builds are not code-signed yet. Choose **More info** and **Run anyway** if you trust the build.
+
+Installer:
+
+1. Download the latest `AJDockSetup-*-win-x64.exe` from Releases.
+2. Run the installer.
+3. Review and accept the beta terms.
+4. Launch AJ Dock from the installer, Start Menu, or desktop shortcut.
+
+Windows SmartScreen may warn because early builds are not code-signed yet. Choose **More info** and **Run anyway** only if you trust the build.
+
+## Uninstall
+
+If installed with the setup exe, uninstall from Windows Settings > Apps > Installed apps > AJ Dock, or use the Start Menu uninstall shortcut. The uninstaller confirms removal and leaves user settings in `%LOCALAPPDATA%\AJDock` so future builds can reuse them.
 
 ## GitHub Release Checklist
 
 ```powershell
-.\scripts\publish.ps1 -Version 0.1.0
-git tag v0.1.0
+.\scripts\publish.ps1 -Version 0.1.1
+.\scripts\build-installer.ps1 -Version 0.1.1
+git tag v0.1.1
 git push origin main --tags
 ```
 
-Then create a GitHub Release for `v0.1.0` and upload the zip from `dist\`.
+Then create a GitHub Release for `v0.1.1` and upload the zip from `dist\` plus the installer from `dist\installer\`.
 
 ## Notes
 
