@@ -85,6 +85,15 @@ dist\installer\AJDockSetup-v0.1.1-win-x64.exe
 
 Upload the zip and/or installer to a GitHub Release.
 
+To sign release binaries after you have a code-signing certificate:
+
+```powershell
+$env:AJDOCK_CERT_PASSWORD = "your-pfx-password"
+.\scripts\build-installer.ps1 -Version 0.1.1 -Sign -CertificatePath C:\Path\To\AJDock.pfx
+```
+
+See [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) for SmartScreen, signing, installer, and private tester guidance.
+
 ## Install
 
 Portable:
@@ -100,7 +109,7 @@ Installer:
 3. Review and accept the beta terms.
 4. Launch AJ Dock from the installer, Start Menu, or desktop shortcut.
 
-Windows SmartScreen may warn because early builds are not code-signed yet. Choose **More info** and **Run anyway** only if you trust the build.
+Windows SmartScreen may warn because early builds are not code-signed yet. Choose **More info** and **Run anyway** only if you trust the build. Some Windows 11 systems with Smart App Control may block unsigned apps more strictly.
 
 ## Uninstall
 
