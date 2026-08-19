@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\AJDock.ico</ApplicationIcon>
+    <AssemblyName>AJDock</AssemblyName>
+    <RootNamespace>AJDock.App</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\AJDock.ico" />
+    <None Remove="Assets\AJDock.png" />
+    <Resource Include="Assets\AJDock.ico" />
+    <Resource Include="Assets\AJDock.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AJDock.Core\AJDock.Core.csproj" />
+  </ItemGroup>
+</Project>

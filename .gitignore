@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+artifacts/
+dist/
+*.nupkg
+*.snupkg
+*.log
+*.tmp
+*.zip
+!docs/**/*.zip
+*.pdb
