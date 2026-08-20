@@ -891,10 +891,12 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Button x:Name="WifiButton"
-                        Grid.Column="2"
+                        Grid.Column="4"
                         Width="28"
                         Height="32"
                         Margin="7,0,0,0"
@@ -909,14 +911,54 @@
                                VerticalAlignment="Center" />
                 </Button>
 
+                <Border Grid.Column="0" Width="1" Height="28" Background="#38FFFFFF" Margin="0,0,7,0" />
+
+                <Button x:Name="CaffeineButton"
+                        Grid.Column="1"
+                        Width="30"
+                        Height="32"
+                        Margin="0,0,5,0"
+                        Style="{StaticResource IconButtonStyle}"
+                        Command="{Binding ToggleCaffeineCommand}"
+                        ToolTip="{Binding CaffeineStatusText}">
+                    <Grid>
+                        <Viewbox Width="18"
+                                 Height="18"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="M5,8 L16,8 L16,13 C16,15.2 14.2,17 12,17 L9,17 C6.8,17 5,15.2 5,13 Z M16,10 L18,10 C19.1,10 20,10.9 20,12 C20,13.1 19.1,14 18,14 L16,14 M7,20 L17,20 M8,5 C7.4,4.2 7.4,3.3 8,2.5 M12,5 C11.4,4.2 11.4,3.3 12,2.5"
+                                      Stroke="#F8F2E9"
+                                      StrokeThickness="1.8"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      Fill="Transparent" />
+                            </Canvas>
+                        </Viewbox>
+                        <Ellipse Width="5"
+                                 Height="5"
+                                 Fill="#87FFB0"
+                                 Stroke="#E8FFFFFF"
+                                 StrokeThickness="0.8"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Bottom"
+                                 Margin="0,0,0,4"
+                                 Visibility="{Binding IsCaffeineRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Ellipse.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#42FF8A" Opacity="0.8" />
+                            </Ellipse.Effect>
+                        </Ellipse>
+                    </Grid>
+                </Button>
+
                 <Button x:Name="SystemClusterButton"
-                        Grid.Column="0"
+                        Grid.Column="2"
                         Style="{StaticResource IconButtonStyle}"
                         Command="{Binding ToggleSystemPopoverCommand}"
                         Padding="0"
                         ToolTip="Calendar and world clocks">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="1" Height="28" Background="#38FFFFFF" Margin="0,0,10,0" />
                         <TextBlock Text="{Binding ClockText}"
                                    Foreground="#EEF8FF"
                                    FontSize="13"
@@ -941,7 +983,7 @@
                 </Button>
 
                 <Button x:Name="SoundButton"
-                        Grid.Column="1"
+                        Grid.Column="3"
                         Width="28"
                         Height="32"
                         Margin="7,0,0,0"

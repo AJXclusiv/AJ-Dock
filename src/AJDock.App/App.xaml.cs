@@ -79,7 +79,8 @@ public partial class App : Application
                 new SystemMonitorService(),
                 new WeatherService(),
                 new ArtworkLookupService(),
-                new MediaSessionService());
+                new MediaSessionService(),
+                new CaffeineService());
 
             var window = new MainWindow(viewModel, new WindowEffectService(), snapshotPath);
             _dockWindow = window;

@@ -34,6 +34,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private readonly WeatherService _weatherService;
     private readonly ArtworkLookupService _artworkLookupService;
     private readonly MediaSessionService _mediaSessionService;
+    private readonly CaffeineService _caffeineService;
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _clockTimer;
     private readonly DispatcherTimer _systemStatusTimer;
@@ -64,6 +65,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private string _wifiSpeedTestText = "Run a speed test";
     private string _wirelessAdapterName = "Wi-Fi";
     private bool _isWirelessEnabled;
+    private bool _isCaffeineRunning;
     private bool _isSpeedTestRunning;
     private bool _isSpotifyActive;
     private string _spotifyTrackText = "Spotify";
@@ -100,7 +102,8 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         SystemMonitorService systemMonitorService,
         WeatherService weatherService,
         ArtworkLookupService artworkLookupService,
-        MediaSessionService mediaSessionService)
+        MediaSessionService mediaSessionService,
+        CaffeineService caffeineService)
     {
         _settingsService = settingsService;
         _applicationLauncher = applicationLauncher;
@@ -122,6 +125,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         _weatherService = weatherService;
         _artworkLookupService = artworkLookupService;
         _mediaSessionService = mediaSessionService;
+        _caffeineService = caffeineService;
 
         Settings = _settingsService.Load();
         Settings.StartWithWindows = _startupService.IsEnabled();
@@ -152,6 +156,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         ConnectWifiNetworkCommand = new RelayCommand(ConnectWifiNetwork, parameter => parameter is WifiNetworkViewModel);
         OpenSoundSettingsCommand = new RelayCommand(_ => OpenSoundSettings());
         ToggleVolumePopoverCommand = new RelayCommand(_ => ToggleVolumePopover());
+        ToggleCaffeineCommand = new RelayCommand(_ => ToggleCaffeine());
         ToggleHiddenTrayCommand = new RelayCommand(_ => ToggleHiddenTray());
         OpenHiddenTrayItemCommand = new RelayCommand(OpenHiddenTrayItem, parameter => parameter is HiddenTrayItemViewModel);
         ToggleStartMenuCommand = new RelayCommand(_ => ToggleStartMenu());
@@ -256,6 +261,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     public RelayCommand ConnectWifiNetworkCommand { get; }
     public RelayCommand OpenSoundSettingsCommand { get; }
     public RelayCommand ToggleVolumePopoverCommand { get; }
+    public RelayCommand ToggleCaffeineCommand { get; }
     public RelayCommand ToggleHiddenTrayCommand { get; }
     public RelayCommand OpenHiddenTrayItemCommand { get; }
     public RelayCommand ToggleStartMenuCommand { get; }
@@ -345,6 +351,33 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     {
         get => _wifiSpeedTestText;
         private set => SetProperty(ref _wifiSpeedTestText, value);
+    }
+
+    public bool IsCaffeineRunning
+    {
+        get => _isCaffeineRunning;
+        private set
+        {
+            if (SetProperty(ref _isCaffeineRunning, value))
+            {
+                OnPropertyChanged(nameof(CaffeineStatusText));
+            }
+        }
+    }
+
+    public string CaffeineStatusText
+    {
+        get
+        {
+            if (!_caffeineService.IsInstalled)
+            {
+                return "Caffeine not found";
+            }
+
+            return IsCaffeineRunning
+                ? "Caffeine is keeping the PC awake"
+                : "Start Caffeine";
+        }
     }
 
     public bool IsSpotifyActive
@@ -828,6 +861,18 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         }
     }
 
+    private void ToggleCaffeine()
+    {
+        IsStartMenuOpen = false;
+        IsHiddenTrayOpen = false;
+        IsSystemPopoverOpen = false;
+        IsWifiPopoverOpen = false;
+        IsVolumePopoverOpen = false;
+        IsPreviewOpen = false;
+        _caffeineService.Toggle();
+        RefreshCaffeineStatus();
+    }
+
     private async Task RunWifiSpeedTestAsync()
     {
         IsSpeedTestRunning = true;
@@ -1224,11 +1269,17 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         CpuText = system.CpuText;
         MemoryText = system.MemoryText;
         BatteryText = system.BatteryText;
+        RefreshCaffeineStatus();
 
         if (CalendarMonthText != DateTime.Now.ToString("MMMM yyyy", CultureInfo.CurrentCulture))
         {
             RefreshCalendar();
         }
+    }
+
+    private void RefreshCaffeineStatus()
+    {
+        IsCaffeineRunning = _caffeineService.IsRunning();
     }
 
     private async Task RefreshWeatherAsync()
