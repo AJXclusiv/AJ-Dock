@@ -526,11 +526,7 @@
                                        Stretch="Uniform"
                                        RenderOptions.BitmapScalingMode="HighQuality"
                                        SnapsToDevicePixels="False"
-                                       UseLayoutRounding="False">
-                                    <Image.CacheMode>
-                                        <BitmapCache RenderAtScale="1.5" EnableClearType="False" />
-                                    </Image.CacheMode>
-                                </Image>
+                                       UseLayoutRounding="False" />
                                 <Ellipse Width="6"
                                          Height="6"
                                          Fill="#9CF8FF"

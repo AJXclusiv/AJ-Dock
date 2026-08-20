@@ -22,7 +22,12 @@ public sealed class IconImageService
             return cached;
         }
 
-        var image = TryLoadBitmap(iconPath) ?? TryExtractJumboShellIcon(iconPath) ?? TryExtractShellIcon(iconPath) ?? CreateFallbackIcon();
+        var image = TryLoadBitmap(iconPath)
+            ?? TryExtractShellItemImage(iconPath, 768)
+            ?? TryExtractShellItemImage(iconPath, 512)
+            ?? TryExtractJumboShellIcon(iconPath)
+            ?? TryExtractShellIcon(iconPath)
+            ?? CreateFallbackIcon();
         image.Freeze();
         _cache[iconPath] = image;
         return image;
@@ -81,6 +86,53 @@ public sealed class IconImageService
         finally
         {
             NativeMethods.DestroyIcon(info.IconHandle);
+        }
+    }
+
+    private static ImageSource? TryExtractShellItemImage(string path, int size)
+    {
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        var iid = typeof(NativeMethods.IShellItemImageFactory).GUID;
+        if (NativeMethods.SHCreateItemFromParsingName(path, nint.Zero, ref iid, out var imageFactory) != 0)
+        {
+            return null;
+        }
+
+        var bitmapHandle = nint.Zero;
+        try
+        {
+            var requestedSize = new NativeMethods.Size
+            {
+                Cx = size,
+                Cy = size
+            };
+            var flags = NativeMethods.SiigbfBiggersizeok | NativeMethods.SiigbfIconOnly;
+            if (imageFactory.GetImage(requestedSize, flags, out bitmapHandle) != 0 || bitmapHandle == nint.Zero)
+            {
+                return null;
+            }
+
+            return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                bitmapHandle,
+                nint.Zero,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+        }
+        finally
+        {
+            if (bitmapHandle != nint.Zero)
+            {
+                NativeMethods.DeleteObject(bitmapHandle);
+            }
+
+            if (System.Runtime.InteropServices.Marshal.IsComObject(imageFactory))
+            {
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(imageFactory);
+            }
         }
     }
 

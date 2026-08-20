@@ -50,6 +50,9 @@ internal static class NativeMethods
     public const int ShilExtraLarge = 2;
     public const int ShilJumbo = 4;
     public const int IldTransparent = 0x00000001;
+    public const uint SiigbfResizeToFit = 0;
+    public const uint SiigbfBiggersizeok = 1;
+    public const uint SiigbfIconOnly = 4;
     public const int TbButtonCount = 0x0418;
     public const int TbGetButton = 0x0417;
     public const int TbGetButtonTextW = 0x044B;
@@ -123,6 +126,13 @@ internal static class NativeMethods
     {
         public BitmapInfoHeader Header;
         public uint Colors;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Size
+    {
+        public int Cx;
+        public int Cy;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -288,6 +298,13 @@ internal static class NativeMethods
     [DllImport("shell32.dll")]
     public static extern int SHGetImageList(int imageList, ref Guid iid, out IImageList ppv);
 
+    [DllImport("shell32.dll", EntryPoint = "SHCreateItemFromParsingName", CharSet = CharSet.Unicode)]
+    public static extern int SHCreateItemFromParsingName(
+        string path,
+        nint bindContext,
+        ref Guid riid,
+        out IShellItemImageFactory imageFactory);
+
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool DestroyIcon(nint iconHandle);
@@ -320,5 +337,14 @@ internal static class NativeMethods
 
         [PreserveSig]
         int GetIcon(int i, int flags, ref nint picon);
+    }
+
+    [ComImport]
+    [Guid("BCC18B79-BA16-442F-80C4-8A59C30C463B")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IShellItemImageFactory
+    {
+        [PreserveSig]
+        int GetImage(Size size, uint flags, out nint bitmapHandle);
     }
 }
