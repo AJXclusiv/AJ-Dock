@@ -33,11 +33,49 @@
                                 Padding="{TemplateBinding Padding}"
                                 CornerRadius="5"
                                 Background="Transparent">
-                            <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0"
+                                                  ContentSource="Header"
+                                                  RecognizesAccessKey="True"
+                                                  VerticalAlignment="Center" />
+                                <Path x:Name="SubmenuArrow"
+                                      Grid.Column="1"
+                                      Width="5"
+                                      Height="9"
+                                      Margin="14,0,0,0"
+                                      VerticalAlignment="Center"
+                                      Fill="#B8C5D6"
+                                      Data="M 0 0 L 5 4.5 L 0 9 Z"
+                                      Visibility="Collapsed" />
+                                <Popup x:Name="PART_Popup"
+                                       AllowsTransparency="True"
+                                       Focusable="False"
+                                       IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Placement="Right"
+                                       PopupAnimation="Fade">
+                                    <Border CornerRadius="8"
+                                            Background="#EA101820"
+                                            BorderBrush="#405C6F83"
+                                            BorderThickness="1"
+                                            Padding="0,5">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="18" ShadowDepth="8" Opacity="0.45" />
+                                        </Border.Effect>
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                    </Border>
+                                </Popup>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
                                 <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource MenuHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="HasItems" Value="True">
+                                <Setter TargetName="SubmenuArrow" Property="Visibility" Value="Visible" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />

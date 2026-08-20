@@ -169,6 +169,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         ClearCaffeineTimersCommand = new RelayCommand(_ => ClearCaffeineTimers());
         LaunchOriginalCaffeineCommand = new RelayCommand(_ => LaunchOriginalCaffeine());
         StopOriginalCaffeineCommand = new RelayCommand(_ => StopOriginalCaffeine());
+        RunOriginalCaffeineCommand = new RelayCommand(RunOriginalCaffeine);
         ToggleHiddenTrayCommand = new RelayCommand(_ => ToggleHiddenTray());
         OpenHiddenTrayItemCommand = new RelayCommand(OpenHiddenTrayItem, parameter => parameter is HiddenTrayItemViewModel);
         ToggleStartMenuCommand = new RelayCommand(_ => ToggleStartMenu());
@@ -283,6 +284,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     public RelayCommand ClearCaffeineTimersCommand { get; }
     public RelayCommand LaunchOriginalCaffeineCommand { get; }
     public RelayCommand StopOriginalCaffeineCommand { get; }
+    public RelayCommand RunOriginalCaffeineCommand { get; }
     public RelayCommand ToggleHiddenTrayCommand { get; }
     public RelayCommand OpenHiddenTrayItemCommand { get; }
     public RelayCommand ToggleStartMenuCommand { get; }
@@ -1000,6 +1002,12 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private void LaunchOriginalCaffeine()
     {
         _caffeineService.LaunchOriginal();
+        RefreshCaffeineStatus();
+    }
+
+    private void RunOriginalCaffeine(object? parameter)
+    {
+        _caffeineService.LaunchOriginal(parameter?.ToString() ?? string.Empty);
         RefreshCaffeineStatus();
     }
 
