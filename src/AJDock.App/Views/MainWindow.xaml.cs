@@ -535,7 +535,7 @@ public partial class MainWindow : Window
 
         var pointer = _lastDockMousePosition;
         var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.6, 140);
-        var settle = Math.Clamp(1 - Math.Exp(-18_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.18, 0.56);
+        var settle = Math.Clamp(1 - Math.Exp(-28_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.34, 0.82);
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
         {
@@ -573,9 +573,9 @@ public partial class MainWindow : Window
             }
 
             state.Scale += (targetScale - state.Scale) * settle;
-            state.TranslateY += (targetY - state.TranslateY) * settle;
-            state.TranslateX += (targetX - state.TranslateX) * settle;
-            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(0.72, settle * 1.35);
+            state.TranslateY += (targetY - state.TranslateY) * Math.Min(0.9, settle * 1.08);
+            state.TranslateX += (targetX - state.TranslateX) * Math.Min(0.9, settle * 1.12);
+            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(0.94, settle * 1.65);
 
             var displayScale = Math.Clamp(state.Scale, 0.92, DockSettings.MaxMagnification + 0.04);
             state.ScaleTransform.ScaleX = displayScale;
