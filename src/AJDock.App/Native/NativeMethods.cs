@@ -17,7 +17,12 @@ internal static class NativeMethods
     public const byte VkMediaNextTrack = 0xB0;
     public const byte VkMediaPreviousTrack = 0xB1;
     public const byte VkMediaPlayPause = 0xB3;
+    public const byte VkF15 = 0x7E;
+    public const byte VkShift = 0x10;
     public const uint KeyeventfKeyUp = 0x0002;
+    public const uint EsSystemRequired = 0x00000001;
+    public const uint EsDisplayRequired = 0x00000002;
+    public const uint EsContinuous = 0x80000000;
 
     public const int DwmwaWindowCornerPreference = 33;
     public const int DwmwaBorderColor = 34;
@@ -234,6 +239,9 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, nuint extraInfo);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    public static extern uint SetThreadExecutionState(uint esFlags);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

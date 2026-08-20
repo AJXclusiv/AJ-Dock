@@ -66,6 +66,9 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private string _wirelessAdapterName = "Wi-Fi";
     private bool _isWirelessEnabled;
     private bool _isCaffeineRunning;
+    private bool _isOriginalCaffeineRunning;
+    private string _caffeineModeText = "F15 every 59s";
+    private string _caffeineTimerText = string.Empty;
     private bool _isSpeedTestRunning;
     private bool _isSpotifyActive;
     private string _spotifyTrackText = "Spotify";
@@ -157,6 +160,15 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         OpenSoundSettingsCommand = new RelayCommand(_ => OpenSoundSettings());
         ToggleVolumePopoverCommand = new RelayCommand(_ => ToggleVolumePopover());
         ToggleCaffeineCommand = new RelayCommand(_ => ToggleCaffeine());
+        SetCaffeineActiveCommand = new RelayCommand(SetCaffeineActive);
+        SetCaffeineActiveForCommand = new RelayCommand(parameter => SetCaffeineActiveFor(parameter));
+        SetCaffeineInactiveForCommand = new RelayCommand(parameter => SetCaffeineInactiveFor(parameter));
+        SetCaffeineExitAfterCommand = new RelayCommand(parameter => SetCaffeineExitAfter(parameter));
+        SetCaffeineMethodCommand = new RelayCommand(parameter => SetCaffeineMethod(parameter));
+        SetCaffeineIntervalCommand = new RelayCommand(parameter => SetCaffeineInterval(parameter));
+        ClearCaffeineTimersCommand = new RelayCommand(_ => ClearCaffeineTimers());
+        LaunchOriginalCaffeineCommand = new RelayCommand(_ => LaunchOriginalCaffeine());
+        StopOriginalCaffeineCommand = new RelayCommand(_ => StopOriginalCaffeine());
         ToggleHiddenTrayCommand = new RelayCommand(_ => ToggleHiddenTray());
         OpenHiddenTrayItemCommand = new RelayCommand(OpenHiddenTrayItem, parameter => parameter is HiddenTrayItemViewModel);
         ToggleStartMenuCommand = new RelayCommand(_ => ToggleStartMenu());
@@ -262,6 +274,15 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     public RelayCommand OpenSoundSettingsCommand { get; }
     public RelayCommand ToggleVolumePopoverCommand { get; }
     public RelayCommand ToggleCaffeineCommand { get; }
+    public RelayCommand SetCaffeineActiveCommand { get; }
+    public RelayCommand SetCaffeineActiveForCommand { get; }
+    public RelayCommand SetCaffeineInactiveForCommand { get; }
+    public RelayCommand SetCaffeineExitAfterCommand { get; }
+    public RelayCommand SetCaffeineMethodCommand { get; }
+    public RelayCommand SetCaffeineIntervalCommand { get; }
+    public RelayCommand ClearCaffeineTimersCommand { get; }
+    public RelayCommand LaunchOriginalCaffeineCommand { get; }
+    public RelayCommand StopOriginalCaffeineCommand { get; }
     public RelayCommand ToggleHiddenTrayCommand { get; }
     public RelayCommand OpenHiddenTrayItemCommand { get; }
     public RelayCommand ToggleStartMenuCommand { get; }
@@ -361,6 +382,40 @@ public sealed class DockViewModel : ObservableObject, IDisposable
             if (SetProperty(ref _isCaffeineRunning, value))
             {
                 OnPropertyChanged(nameof(CaffeineStatusText));
+                OnPropertyChanged(nameof(IsCaffeineKeepingAwake));
+            }
+        }
+    }
+
+    public bool IsOriginalCaffeineRunning
+    {
+        get => _isOriginalCaffeineRunning;
+        private set
+        {
+            if (SetProperty(ref _isOriginalCaffeineRunning, value))
+            {
+                OnPropertyChanged(nameof(CaffeineStatusText));
+                OnPropertyChanged(nameof(IsCaffeineKeepingAwake));
+            }
+        }
+    }
+
+    public bool IsCaffeineKeepingAwake => IsCaffeineRunning || IsOriginalCaffeineRunning;
+
+    public string CaffeineModeText
+    {
+        get => _caffeineModeText;
+        private set => SetProperty(ref _caffeineModeText, value);
+    }
+
+    public string CaffeineTimerText
+    {
+        get => _caffeineTimerText;
+        private set
+        {
+            if (SetProperty(ref _caffeineTimerText, value))
+            {
+                OnPropertyChanged(nameof(CaffeineStatusText));
             }
         }
     }
@@ -369,14 +424,19 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     {
         get
         {
-            if (!_caffeineService.IsInstalled)
+            if (IsCaffeineRunning)
             {
-                return "Caffeine not found";
+                return string.IsNullOrWhiteSpace(CaffeineTimerText)
+                    ? $"AJ Caffeine active - {CaffeineModeText}"
+                    : $"AJ Caffeine active - {CaffeineTimerText}";
             }
 
-            return IsCaffeineRunning
-                ? "Caffeine is keeping the PC awake"
-                : "Start Caffeine";
+            if (IsOriginalCaffeineRunning)
+            {
+                return "Original Caffeine is running";
+            }
+
+            return "Start AJ Caffeine";
         }
     }
 
@@ -753,6 +813,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         _volumeAutoCloseTimer.Stop();
         _weatherService.Dispose();
         _artworkLookupService.Dispose();
+        _caffeineService.Dispose();
         _taskbarService.RestoreIfNeeded();
     }
 
@@ -870,6 +931,81 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         IsVolumePopoverOpen = false;
         IsPreviewOpen = false;
         _caffeineService.Toggle();
+        RefreshCaffeineStatus();
+    }
+
+    private void SetCaffeineActive(object? parameter)
+    {
+        var isActive = !bool.TryParse(parameter?.ToString(), out var parsed) || parsed;
+        _caffeineService.SetActive(isActive);
+        RefreshCaffeineStatus();
+    }
+
+    private void SetCaffeineActiveFor(object? parameter)
+    {
+        if (TryGetMinutes(parameter, out var minutes))
+        {
+            _caffeineService.ActiveFor(TimeSpan.FromMinutes(minutes));
+            RefreshCaffeineStatus();
+        }
+    }
+
+    private void SetCaffeineInactiveFor(object? parameter)
+    {
+        if (TryGetMinutes(parameter, out var minutes))
+        {
+            _caffeineService.InactiveFor(TimeSpan.FromMinutes(minutes));
+            RefreshCaffeineStatus();
+        }
+    }
+
+    private void SetCaffeineExitAfter(object? parameter)
+    {
+        if (TryGetMinutes(parameter, out var minutes))
+        {
+            _caffeineService.ExitAfter(TimeSpan.FromMinutes(minutes));
+            RefreshCaffeineStatus();
+        }
+    }
+
+    private void SetCaffeineMethod(object? parameter)
+    {
+        if (parameter is CaffeineKeepAwakeMethod method)
+        {
+            _caffeineService.SetMethod(method);
+        }
+        else if (parameter is string name && Enum.TryParse<CaffeineKeepAwakeMethod>(name, out var parsed))
+        {
+            _caffeineService.SetMethod(parsed);
+        }
+
+        RefreshCaffeineStatus();
+    }
+
+    private void SetCaffeineInterval(object? parameter)
+    {
+        if (TryGetMinutesOrSeconds(parameter, out var seconds))
+        {
+            _caffeineService.SetInterval(seconds);
+            RefreshCaffeineStatus();
+        }
+    }
+
+    private void ClearCaffeineTimers()
+    {
+        _caffeineService.ClearTimers();
+        RefreshCaffeineStatus();
+    }
+
+    private void LaunchOriginalCaffeine()
+    {
+        _caffeineService.LaunchOriginal();
+        RefreshCaffeineStatus();
+    }
+
+    private void StopOriginalCaffeine()
+    {
+        _caffeineService.StopOriginal();
         RefreshCaffeineStatus();
     }
 
@@ -1279,7 +1415,59 @@ public sealed class DockViewModel : ObservableObject, IDisposable
 
     private void RefreshCaffeineStatus()
     {
-        IsCaffeineRunning = _caffeineService.IsRunning();
+        var snapshot = _caffeineService.GetSnapshot();
+        IsCaffeineRunning = snapshot.IsActive;
+        IsOriginalCaffeineRunning = snapshot.IsOriginalRunning;
+        CaffeineModeText = snapshot.Method switch
+        {
+            CaffeineKeepAwakeMethod.ShiftKey => $"Shift every {snapshot.IntervalSeconds}s",
+            CaffeineKeepAwakeMethod.WindowsStayAwake => "Windows stay-awake",
+            CaffeineKeepAwakeMethod.AllowScreensaver => "Prevent sleep, allow screensaver",
+            _ => $"F15 every {snapshot.IntervalSeconds}s"
+        };
+        CaffeineTimerText = FormatCaffeineTimer(snapshot);
+    }
+
+    private static string FormatCaffeineTimer(CaffeineSnapshot snapshot)
+    {
+        var now = DateTimeOffset.Now;
+        var parts = new List<string>();
+        if (snapshot.StateChangeAt is { } stateChangeAt)
+        {
+            var remaining = FormatRemaining(stateChangeAt - now);
+            parts.Add(snapshot.IsActive ? $"active for {remaining}" : $"inactive for {remaining}");
+        }
+
+        if (snapshot.ExitAt is { } exitAt)
+        {
+            parts.Add($"exit timer {FormatRemaining(exitAt - now)}");
+        }
+
+        return string.Join(", ", parts);
+    }
+
+    private static string FormatRemaining(TimeSpan remaining)
+    {
+        if (remaining <= TimeSpan.Zero)
+        {
+            return "moments";
+        }
+
+        return remaining.TotalHours >= 1
+            ? $"{Math.Ceiling(remaining.TotalHours):F0}h"
+            : $"{Math.Ceiling(remaining.TotalMinutes):F0}m";
+    }
+
+    private static bool TryGetMinutes(object? parameter, out int minutes)
+    {
+        return int.TryParse(parameter?.ToString(), CultureInfo.InvariantCulture, out minutes)
+            && minutes > 0;
+    }
+
+    private static bool TryGetMinutesOrSeconds(object? parameter, out int seconds)
+    {
+        return int.TryParse(parameter?.ToString(), CultureInfo.InvariantCulture, out seconds)
+            && seconds > 0;
     }
 
     private async Task RefreshWeatherAsync()

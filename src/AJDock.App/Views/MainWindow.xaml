@@ -921,6 +921,87 @@
                         Style="{StaticResource IconButtonStyle}"
                         Command="{Binding ToggleCaffeineCommand}"
                         ToolTip="{Binding CaffeineStatusText}">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Style="{StaticResource DockMenuItem}"
+                                      Command="{Binding PlacementTarget.DataContext.SetCaffeineActiveCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="true">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Active" /></StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem Style="{StaticResource DockMenuItem}"
+                                      Command="{Binding PlacementTarget.DataContext.SetCaffeineActiveCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="false">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE769;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Inactive" /></StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Style="{StaticResource DockMenuItem}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE916;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Active for" /></StackPanel>
+                                </MenuItem.Header>
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="15 minutes" Command="{Binding PlacementTarget.DataContext.SetCaffeineActiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="15" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="30 minutes" Command="{Binding PlacementTarget.DataContext.SetCaffeineActiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="30" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="1 hour" Command="{Binding PlacementTarget.DataContext.SetCaffeineActiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="60" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="10 hours" Command="{Binding PlacementTarget.DataContext.SetCaffeineActiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="600" />
+                            </MenuItem>
+                            <MenuItem Style="{StaticResource DockMenuItem}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE823;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Inactive for" /></StackPanel>
+                                </MenuItem.Header>
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="15 minutes" Command="{Binding PlacementTarget.DataContext.SetCaffeineInactiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="15" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="30 minutes" Command="{Binding PlacementTarget.DataContext.SetCaffeineInactiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="30" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="1 hour" Command="{Binding PlacementTarget.DataContext.SetCaffeineInactiveForCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="60" />
+                            </MenuItem>
+                            <MenuItem Style="{StaticResource DockMenuItem}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE7BA;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Exit timer" /></StackPanel>
+                                </MenuItem.Header>
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="30 minutes" Command="{Binding PlacementTarget.DataContext.SetCaffeineExitAfterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="30" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="1 hour" Command="{Binding PlacementTarget.DataContext.SetCaffeineExitAfterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="60" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="2 hours" Command="{Binding PlacementTarget.DataContext.SetCaffeineExitAfterCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="120" />
+                            </MenuItem>
+                            <MenuItem Style="{StaticResource DockMenuItem}"
+                                      Command="{Binding PlacementTarget.DataContext.ClearCaffeineTimersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Clear timers" /></StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Style="{StaticResource DockMenuItem}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Keep-awake method" /></StackPanel>
+                                </MenuItem.Header>
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="F15 key pulse" Command="{Binding PlacementTarget.DataContext.SetCaffeineMethodCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="F15Key" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Shift key pulse" Command="{Binding PlacementTarget.DataContext.SetCaffeineMethodCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="ShiftKey" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Windows stay-awake API" Command="{Binding PlacementTarget.DataContext.SetCaffeineMethodCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="WindowsStayAwake" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Allow screensaver" Command="{Binding PlacementTarget.DataContext.SetCaffeineMethodCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="AllowScreensaver" />
+                            </MenuItem>
+                            <MenuItem Style="{StaticResource DockMenuItem}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE950;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Pulse interval" /></StackPanel>
+                                </MenuItem.Header>
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="30 seconds" Command="{Binding PlacementTarget.DataContext.SetCaffeineIntervalCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="30" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="59 seconds" Command="{Binding PlacementTarget.DataContext.SetCaffeineIntervalCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="59" />
+                                <MenuItem Style="{StaticResource DockMenuItem}" Header="2 minutes" Command="{Binding PlacementTarget.DataContext.SetCaffeineIntervalCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="120" />
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Style="{StaticResource DockMenuItem}"
+                                      Command="{Binding PlacementTarget.DataContext.LaunchOriginalCaffeineCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8A7;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Launch original Caffeine" /></StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                            <MenuItem Style="{StaticResource DockMenuItem}"
+                                      Command="{Binding PlacementTarget.DataContext.StopOriginalCaffeineCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Header>
+                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons" Width="22" Foreground="#FF5B67" /><TextBlock Text="Exit original Caffeine" /></StackPanel>
+                                </MenuItem.Header>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
                     <Grid>
                         <Viewbox Width="18"
                                  Height="18"
@@ -944,7 +1025,7 @@
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Bottom"
                                  Margin="0,0,0,4"
-                                 Visibility="{Binding IsCaffeineRunning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                 Visibility="{Binding IsCaffeineKeepingAwake, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Ellipse.Effect>
                                 <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#42FF8A" Opacity="0.8" />
                             </Ellipse.Effect>
