@@ -367,9 +367,6 @@
                                     <TranslateTransform X="0" Y="0" />
                                 </TransformGroup>
                             </Button.RenderTransform>
-                            <Button.CacheMode>
-                                <BitmapCache RenderAtScale="1.5" EnableClearType="False" />
-                            </Button.CacheMode>
                             <Button.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Style="{StaticResource DockMenuItem}"

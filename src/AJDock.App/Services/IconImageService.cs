@@ -23,6 +23,7 @@ public sealed class IconImageService
         }
 
         var image = TryLoadBitmap(iconPath)
+            ?? TryExtractShellItemImage(iconPath, 1024)
             ?? TryExtractShellItemImage(iconPath, 768)
             ?? TryExtractShellItemImage(iconPath, 512)
             ?? TryExtractJumboShellIcon(iconPath)
@@ -50,8 +51,8 @@ public sealed class IconImageService
             var image = new BitmapImage();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
-            image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-            image.DecodePixelWidth = 512;
+            image.CreateOptions = BitmapCreateOptions.PreservePixelFormat | BitmapCreateOptions.IgnoreImageCache;
+            image.DecodePixelWidth = 1024;
             image.UriSource = new Uri(path, UriKind.Absolute);
             image.EndInit();
             return image;
