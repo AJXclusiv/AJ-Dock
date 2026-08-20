@@ -125,6 +125,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
 
         Settings = _settingsService.Load();
         Settings.StartWithWindows = _startupService.IsEnabled();
+        _iconImageService.SetIconQuality(Settings.IconQuality);
 
         Items = new ObservableCollection<DockItemViewModel>(
             Settings.PinnedApps
@@ -1103,8 +1104,31 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private void ApplySettings()
     {
         Settings.Normalize();
+        var iconQualityChanged = _iconImageService.SetIconQuality(Settings.IconQuality);
         _startupService.SetEnabled(Settings.StartWithWindows);
         _taskbarService.SetHidden(Settings.HideWindowsTaskbar);
+        if (iconQualityChanged)
+        {
+            RefreshIconImages();
+        }
+    }
+
+    private void RefreshIconImages()
+    {
+        foreach (var item in Items)
+        {
+            item.Icon = _iconImageService.GetIcon(item.App);
+        }
+
+        foreach (var app in _allStartMenuApps)
+        {
+            app.Icon = _iconImageService.GetIcon(app.App);
+        }
+
+        foreach (var item in HiddenTrayItems)
+        {
+            item.Icon = _iconImageService.GetIcon(item.App);
+        }
     }
 
     private void LoadStartMenuApps()

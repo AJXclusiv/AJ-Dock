@@ -3,15 +3,22 @@ using AJDock.Core.Models;
 
 namespace AJDock.App.ViewModels;
 
-public sealed class HiddenTrayItemViewModel
+public sealed class HiddenTrayItemViewModel : ObservableObject
 {
+    private ImageSource _icon;
+
     public HiddenTrayItemViewModel(PinnedApp app, ImageSource icon)
     {
         App = app;
-        Icon = icon;
+        _icon = icon;
     }
 
     public PinnedApp App { get; }
-    public ImageSource Icon { get; }
+    public ImageSource Icon
+    {
+        get => _icon;
+        set => SetProperty(ref _icon, value);
+    }
+
     public string DisplayName => App.DisplayName;
 }

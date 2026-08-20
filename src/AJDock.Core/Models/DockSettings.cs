@@ -14,6 +14,7 @@ public sealed class DockSettings
 
     public DockPosition Position { get; set; } = DockPosition.Bottom;
     public double IconSize { get; set; } = 48;
+    public double IconQuality { get; set; } = 0.8;
     public double DockSize { get; set; } = 56;
     public double IconSpacing { get; set; } = 12;
     public double MagnificationAmount { get; set; } = 1.8;
@@ -47,6 +48,7 @@ public sealed class DockSettings
     {
         settings.Position = DockPosition.Bottom;
         settings.IconSize = 30;
+        settings.IconQuality = 0.8;
         settings.DockSize = 104;
         settings.IconSpacing = 25;
         settings.MagnificationAmount = 2;
@@ -83,6 +85,7 @@ public sealed class DockSettings
     public void Normalize()
     {
         IconSize = Math.Clamp(IconSize, MinIconSize, MaxIconSize);
+        IconQuality = Math.Clamp(IconQuality, 0.4, 1);
         DockSize = Math.Clamp(DockSize, IconSize + 8, 120);
         IconSpacing = Math.Clamp(IconSpacing, MinSpacing, MaxSpacing);
         MagnificationAmount = Math.Clamp(MagnificationAmount, MinMagnification, MaxMagnification);

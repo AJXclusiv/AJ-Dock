@@ -10,6 +10,20 @@ namespace AJDock.App.Services;
 public sealed class IconImageService
 {
     private readonly Dictionary<string, ImageSource> _cache = new(StringComparer.OrdinalIgnoreCase);
+    private double _iconQuality = 0.8;
+
+    public bool SetIconQuality(double iconQuality)
+    {
+        var normalized = Math.Clamp(iconQuality, 0.4, 1);
+        if (Math.Abs(_iconQuality - normalized) < 0.01)
+        {
+            return false;
+        }
+
+        _iconQuality = normalized;
+        _cache.Clear();
+        return true;
+    }
 
     public ImageSource GetIcon(PinnedApp app)
     {
@@ -22,7 +36,9 @@ public sealed class IconImageService
             return cached;
         }
 
-        var image = TryLoadBitmap(iconPath)
+        var sourcePixelSize = GetSourcePixelSize();
+        var image = TryLoadBitmap(iconPath, sourcePixelSize)
+            ?? TryExtractShellItemImage(iconPath, sourcePixelSize)
             ?? TryExtractShellItemImage(iconPath, 1024)
             ?? TryExtractShellItemImage(iconPath, 768)
             ?? TryExtractShellItemImage(iconPath, 512)
@@ -34,7 +50,12 @@ public sealed class IconImageService
         return image;
     }
 
-    private static ImageSource? TryLoadBitmap(string path)
+    private int GetSourcePixelSize()
+    {
+        return Math.Clamp((int)Math.Round(2048 * _iconQuality), 512, 2048);
+    }
+
+    private static ImageSource? TryLoadBitmap(string path, int sourcePixelSize)
     {
         var extension = Path.GetExtension(path);
         if (!extension.Equals(".png", StringComparison.OrdinalIgnoreCase)
@@ -52,7 +73,7 @@ public sealed class IconImageService
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.CreateOptions = BitmapCreateOptions.PreservePixelFormat | BitmapCreateOptions.IgnoreImageCache;
-            image.DecodePixelWidth = 1024;
+            image.DecodePixelWidth = sourcePixelSize;
             image.UriSource = new Uri(path, UriKind.Absolute);
             image.EndInit();
             return image;

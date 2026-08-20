@@ -320,6 +320,17 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="58" />
                             </Grid.ColumnDefinitions>
+                            <TextBlock Text="Icon Quality" VerticalAlignment="Center" />
+                            <Slider Grid.Column="1" Minimum="0.4" Maximum="1" TickFrequency="0.05" Value="{Binding IconQuality, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Column="2" Text="{Binding IconQuality, StringFormat={}{0:P0}}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+                        </Grid>
+
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="58" />
+                            </Grid.ColumnDefinitions>
                             <TextBlock Text="Dock Size" VerticalAlignment="Center" />
                             <Slider Grid.Column="1" Minimum="32" Maximum="120" TickFrequency="2" Value="{Binding DockSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Grid.Column="2" Text="{Binding DockSize, StringFormat={}{0:F0} px}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" TextAlignment="Right" />
@@ -497,6 +508,16 @@
                             <TextBlock Text="Icon Size" VerticalAlignment="Center" />
                             <Slider Grid.Column="1" Minimum="24" Maximum="96" TickFrequency="2" Value="{Binding IconSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Grid.Column="2" Text="{Binding IconSize, StringFormat={}{0:F0} px}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+                        </Grid>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="58" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Icon Quality" VerticalAlignment="Center" />
+                            <Slider Grid.Column="1" Minimum="0.4" Maximum="1" TickFrequency="0.05" Value="{Binding IconQuality, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Column="2" Text="{Binding IconQuality, StringFormat={}{0:P0}}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" TextAlignment="Right" />
                         </Grid>
                     </StackPanel>
                     <StackPanel x:Name="BehaviorPanel" Visibility="Collapsed">

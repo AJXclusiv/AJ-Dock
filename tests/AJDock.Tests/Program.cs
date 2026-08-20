@@ -29,6 +29,7 @@ static void DockSettingsNormalizeClampsValues()
     var settings = new DockSettings
     {
         IconSize = 4,
+        IconQuality = 2,
         DockSize = 10,
         IconSpacing = 90,
         MagnificationAmount = 6,
@@ -44,6 +45,7 @@ static void DockSettingsNormalizeClampsValues()
     settings.Normalize();
 
     AssertEqual(DockSettings.MinIconSize, settings.IconSize);
+    AssertEqual(1d, settings.IconQuality);
     AssertEqual(settings.IconSize + 8, settings.DockSize);
     AssertEqual(DockSettings.MaxSpacing, settings.IconSpacing);
     AssertEqual(DockSettings.MaxMagnification, settings.MagnificationAmount);

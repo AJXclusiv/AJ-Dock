@@ -57,6 +57,12 @@ public sealed class SettingsViewModel : ObservableObject
         }
     }
 
+    public double IconQuality
+    {
+        get => Settings.IconQuality;
+        set => SetDouble(Settings.IconQuality, value, v => Settings.IconQuality = v);
+    }
+
     public double DockSize
     {
         get => Settings.DockSize;
@@ -479,6 +485,7 @@ public sealed class SettingsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(Position));
         OnPropertyChanged(nameof(IconSize));
+        OnPropertyChanged(nameof(IconQuality));
         OnPropertyChanged(nameof(DockSize));
         OnPropertyChanged(nameof(IconSpacing));
         OnPropertyChanged(nameof(MagnificationAmount));
