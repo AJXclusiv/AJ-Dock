@@ -167,9 +167,6 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         SetCaffeineMethodCommand = new RelayCommand(parameter => SetCaffeineMethod(parameter));
         SetCaffeineIntervalCommand = new RelayCommand(parameter => SetCaffeineInterval(parameter));
         ClearCaffeineTimersCommand = new RelayCommand(_ => ClearCaffeineTimers());
-        LaunchOriginalCaffeineCommand = new RelayCommand(_ => LaunchOriginalCaffeine());
-        StopOriginalCaffeineCommand = new RelayCommand(_ => StopOriginalCaffeine());
-        RunOriginalCaffeineCommand = new RelayCommand(RunOriginalCaffeine);
         ToggleHiddenTrayCommand = new RelayCommand(_ => ToggleHiddenTray());
         OpenHiddenTrayItemCommand = new RelayCommand(OpenHiddenTrayItem, parameter => parameter is HiddenTrayItemViewModel);
         ToggleStartMenuCommand = new RelayCommand(_ => ToggleStartMenu());
@@ -282,9 +279,6 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     public RelayCommand SetCaffeineMethodCommand { get; }
     public RelayCommand SetCaffeineIntervalCommand { get; }
     public RelayCommand ClearCaffeineTimersCommand { get; }
-    public RelayCommand LaunchOriginalCaffeineCommand { get; }
-    public RelayCommand StopOriginalCaffeineCommand { get; }
-    public RelayCommand RunOriginalCaffeineCommand { get; }
     public RelayCommand ToggleHiddenTrayCommand { get; }
     public RelayCommand OpenHiddenTrayItemCommand { get; }
     public RelayCommand ToggleStartMenuCommand { get; }
@@ -431,11 +425,6 @@ public sealed class DockViewModel : ObservableObject, IDisposable
                 return string.IsNullOrWhiteSpace(CaffeineTimerText)
                     ? $"AJ Caffeine active - {CaffeineModeText}"
                     : $"AJ Caffeine active - {CaffeineTimerText}";
-            }
-
-            if (IsOriginalCaffeineRunning)
-            {
-                return "Original Caffeine is running";
             }
 
             return "Start AJ Caffeine";
@@ -996,24 +985,6 @@ public sealed class DockViewModel : ObservableObject, IDisposable
     private void ClearCaffeineTimers()
     {
         _caffeineService.ClearTimers();
-        RefreshCaffeineStatus();
-    }
-
-    private void LaunchOriginalCaffeine()
-    {
-        _caffeineService.LaunchOriginal();
-        RefreshCaffeineStatus();
-    }
-
-    private void RunOriginalCaffeine(object? parameter)
-    {
-        _caffeineService.LaunchOriginal(parameter?.ToString() ?? string.Empty);
-        RefreshCaffeineStatus();
-    }
-
-    private void StopOriginalCaffeine()
-    {
-        _caffeineService.StopOriginal();
         RefreshCaffeineStatus();
     }
 

@@ -992,26 +992,6 @@
                                 <MenuItem Style="{StaticResource DockMenuItem}" Header="2 minutes" Command="{Binding SetCaffeineIntervalCommand}" CommandParameter="120" />
                                 <MenuItem Style="{StaticResource DockMenuItem}" Header="5 minutes" Command="{Binding SetCaffeineIntervalCommand}" CommandParameter="300" />
                             </MenuItem>
-                            <Separator />
-                            <MenuItem Style="{StaticResource DockMenuItem}">
-                                <MenuItem.Header>
-                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8A7;" FontFamily="Segoe Fluent Icons" Width="22" /><TextBlock Text="Original Caffeine commands" /></StackPanel>
-                                </MenuItem.Header>
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Launch original" Command="{Binding LaunchOriginalCaffeineCommand}" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Show status dialog" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-showdlg" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Toggle original active" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-apptoggle" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Original active" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-appon" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Original inactive" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-appoff" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Original active for 30m" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-activefor:30" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Original inactive for 30m" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-inactivefor:30" />
-                                <MenuItem Style="{StaticResource DockMenuItem}" Header="Original exit after 1h" Command="{Binding RunOriginalCaffeineCommand}" CommandParameter="-exitafter:60" />
-                            </MenuItem>
-                            <MenuItem Style="{StaticResource DockMenuItem}"
-                                      Command="{Binding StopOriginalCaffeineCommand}">
-                                <MenuItem.Header>
-                                    <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons" Width="22" Foreground="#FF5B67" /><TextBlock Text="Exit original Caffeine" /></StackPanel>
-                                </MenuItem.Header>
-                            </MenuItem>
                         </ContextMenu>
                     </Button.ContextMenu>
                     <Grid>
