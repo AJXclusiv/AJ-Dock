@@ -227,7 +227,6 @@ public sealed class DockViewModel : ObservableObject, IDisposable
 
         CalendarDays = new ObservableCollection<CalendarDayViewModel>();
         ApplySettings();
-        LoadStartMenuApps();
         RefreshRunningApplications();
         RefreshClock();
         RefreshCalendar();
@@ -766,6 +765,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
         IsStartMenuOpen = !IsStartMenuOpen;
         if (IsStartMenuOpen)
         {
+            EnsureStartMenuAppsLoaded();
             RefreshStartMenuFilter();
         }
     }
@@ -1122,19 +1122,27 @@ public sealed class DockViewModel : ObservableObject, IDisposable
 
         foreach (var app in _allStartMenuApps)
         {
-            app.Icon = _iconImageService.GetIcon(app.App);
+            app.Icon = _iconImageService.GetCompactIcon(app.App);
         }
 
         foreach (var item in HiddenTrayItems)
         {
-            item.Icon = _iconImageService.GetIcon(item.App);
+            item.Icon = _iconImageService.GetCompactIcon(item.App);
+        }
+    }
+
+    private void EnsureStartMenuAppsLoaded()
+    {
+        if (_allStartMenuApps.Count == 0)
+        {
+            LoadStartMenuApps();
         }
     }
 
     private void LoadStartMenuApps()
     {
         _allStartMenuApps = _startMenuAppService.GetApplications()
-            .Select(app => new StartMenuAppViewModel(app, _iconImageService.GetIcon(app)))
+            .Select(app => new StartMenuAppViewModel(app, _iconImageService.GetCompactIcon(app)))
             .ToList();
         RefreshStartMenuFilter();
     }
@@ -1172,7 +1180,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
 
         foreach (var entry in hiddenApps.Where(entry => !existingKeys.Contains(entry.App.NormalizedTargetPath)))
         {
-            HiddenTrayItems.Add(new HiddenTrayItemViewModel(entry.App, entry.Icon ?? _iconImageService.GetIcon(entry.App)));
+            HiddenTrayItems.Add(new HiddenTrayItemViewModel(entry.App, entry.Icon ?? _iconImageService.GetCompactIcon(entry.App)));
         }
     }
 

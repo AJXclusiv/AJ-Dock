@@ -27,32 +27,41 @@ public sealed class IconImageService
 
     public ImageSource GetIcon(PinnedApp app)
     {
+        return GetIcon(app, GetSourcePixelSize());
+    }
+
+    public ImageSource GetCompactIcon(PinnedApp app)
+    {
+        return GetIcon(app, 256);
+    }
+
+    private ImageSource GetIcon(PinnedApp app, int requestedPixelSize)
+    {
         var iconPath = !string.IsNullOrWhiteSpace(app.CustomIconPath) && File.Exists(app.CustomIconPath)
             ? app.CustomIconPath
             : app.TargetPath;
+        var sourcePixelSize = Math.Clamp(requestedPixelSize, 128, 1024);
+        var cacheKey = $"{sourcePixelSize}|{iconPath}";
 
-        if (_cache.TryGetValue(iconPath, out var cached))
+        if (_cache.TryGetValue(cacheKey, out var cached))
         {
             return cached;
         }
 
-        var sourcePixelSize = GetSourcePixelSize();
         var image = TryLoadBitmap(iconPath, sourcePixelSize)
             ?? TryExtractShellItemImage(iconPath, sourcePixelSize)
-            ?? TryExtractShellItemImage(iconPath, 1024)
-            ?? TryExtractShellItemImage(iconPath, 768)
-            ?? TryExtractShellItemImage(iconPath, 512)
+            ?? (sourcePixelSize < 512 ? null : TryExtractShellItemImage(iconPath, 512))
             ?? TryExtractJumboShellIcon(iconPath)
             ?? TryExtractShellIcon(iconPath)
             ?? CreateFallbackIcon();
         image.Freeze();
-        _cache[iconPath] = image;
+        _cache[cacheKey] = image;
         return image;
     }
 
     private int GetSourcePixelSize()
     {
-        return Math.Clamp((int)Math.Round(2048 * _iconQuality), 512, 2048);
+        return Math.Clamp((int)Math.Round(1024 * _iconQuality), 512, 1024);
     }
 
     private static ImageSource? TryLoadBitmap(string path, int sourcePixelSize)
