@@ -490,6 +490,22 @@
                                 </ContextMenu>
                             </Button.ContextMenu>
                             <Grid>
+                                <Border Tag="DockItemHoverBackplate"
+                                        Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CornerRadius="14"
+                                        Background="#1DFFFFFF"
+                                        BorderBrush="#2CFFFFFF"
+                                        BorderThickness="1"
+                                        Opacity="0"
+                                        IsHitTestVisible="False">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="22"
+                                                          ShadowDepth="0"
+                                                          Color="#55D8FF"
+                                                          Opacity="0.58" />
+                                    </Border.Effect>
+                                </Border>
                                 <Image Source="{Binding Icon}"
                                        Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                        Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"

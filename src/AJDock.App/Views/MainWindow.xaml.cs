@@ -33,7 +33,6 @@ public partial class MainWindow : Window
     private bool _playedStartupAnimation;
     private double _spectrumPhase;
     private double _smoothedAudioPeak;
-    private TimeSpan? _lastRenderingTime;
 
     public MainWindow(DockViewModel viewModel, WindowEffectService windowEffectService, string? snapshotPath = null)
     {
@@ -535,11 +534,8 @@ public partial class MainWindow : Window
         }
 
         var pointer = _lastDockMousePosition;
-        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.4, 130);
-        var frameSeconds = GetFrameSeconds(e);
-        var speedFactor = Math.Clamp(120 / _viewModel.Settings.AnimationSpeed, 0.3, 2.4);
-        var stiffness = 220 + (260 * speedFactor);
-        var damping = 20 + (10 / Math.Sqrt(speedFactor));
+        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.6, 140);
+        var settle = Math.Clamp(1 - Math.Exp(-18_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.18, 0.56);
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
         {
@@ -557,43 +553,40 @@ public partial class MainWindow : Window
             var state = GetAnimationState(button);
             var targetScale = 1d;
             var targetY = 0d;
+            var targetX = 0d;
+            var targetGlow = 0d;
             var distance = double.MaxValue;
-            var isFocused = false;
 
             if (_isPointerOverDock && pointer is { } position)
             {
                 var center = button.TranslatePoint(new Point(button.ActualWidth / 2, button.ActualHeight / 2), DockItems);
                 distance = Math.Abs(position.X - center.X);
                 var normalized = Math.Clamp(distance / influenceRadius, 0, 1);
-                var falloff = Math.Pow((Math.Cos(normalized * Math.PI) + 1) / 2, 1.35);
+                var falloff = SmoothStep((Math.Cos(normalized * Math.PI) + 1) / 2);
                 targetScale = 1 + ((_viewModel.Settings.MagnificationAmount - 1) * falloff);
-                targetY = -(_viewModel.Settings.IconSize * (targetScale - 1) * 0.2);
+                targetY = -(_viewModel.Settings.IconSize * (targetScale - 1) * 0.18);
+                targetGlow = Math.Pow(falloff, 1.8) * 0.78;
 
+                var direction = Math.Sign(center.X - position.X);
+                var repel = Math.Sin(Math.Clamp(normalized, 0, 1) * Math.PI) * falloff;
+                targetX = direction * Math.Min(_viewModel.Settings.IconSpacing * 0.38, 9) * repel;
             }
 
-            isFocused = button.IsMouseOver || button == focusedButton || distance < _viewModel.Settings.IconSize * 0.58;
-            if (isFocused && !state.WasFocused)
-            {
-                state.ScaleVelocity += 5.2 * speedFactor;
-                state.TranslateVelocity -= _viewModel.Settings.IconSize * 5.8 * speedFactor;
-            }
+            state.Scale += (targetScale - state.Scale) * settle;
+            state.TranslateY += (targetY - state.TranslateY) * settle;
+            state.TranslateX += (targetX - state.TranslateX) * settle;
+            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(0.72, settle * 1.35);
 
-            StepSpring(ref state.Scale, ref state.ScaleVelocity, targetScale, stiffness, damping, frameSeconds);
-            StepSpring(ref state.TranslateY, ref state.TranslateVelocity, targetY, stiffness * 0.9, damping * 0.86, frameSeconds);
-
-            var bounce = isFocused
-                ? Math.Sin(Math.Min(state.FocusPulse, 1) * Math.PI) * 0.08
-                : 0;
-            state.FocusPulse = isFocused
-                ? Math.Min(1, state.FocusPulse + (frameSeconds * 7.5))
-                : Math.Max(0, state.FocusPulse - (frameSeconds * 8));
-            state.WasFocused = isFocused;
-
-            var displayScale = Math.Clamp(state.Scale + bounce, 0.82, DockSettings.MaxMagnification + 0.18);
-            var squash = isFocused ? Math.Clamp(1 - ((displayScale - 1) * 0.08), 0.9, 1) : 1;
-            state.ScaleTransform.ScaleX = displayScale * (1 + ((1 - squash) * 0.55));
-            state.ScaleTransform.ScaleY = displayScale * squash;
+            var displayScale = Math.Clamp(state.Scale, 0.92, DockSettings.MaxMagnification + 0.04);
+            state.ScaleTransform.ScaleX = displayScale;
+            state.ScaleTransform.ScaleY = displayScale;
+            state.TranslateTransform.X = state.TranslateX;
             state.TranslateTransform.Y = state.TranslateY;
+            if (state.HoverBackplate is not null)
+            {
+                state.HoverBackplate.Opacity = state.GlowOpacity;
+            }
+
             SetDockItemZIndex(button, Math.Max(0, (int)Math.Round(displayScale * 100)));
         }
 
@@ -642,33 +635,10 @@ public partial class MainWindow : Window
         SpotifyRightSpectrumGlow.Opacity = SpotifyLeftSpectrumGlow.Opacity;
     }
 
-    private double GetFrameSeconds(EventArgs args)
+    private static double SmoothStep(double value)
     {
-        if (args is not RenderingEventArgs renderingArgs)
-        {
-            return 1d / 60d;
-        }
-
-        var elapsed = renderingArgs.RenderingTime;
-        var seconds = _lastRenderingTime is { } previous
-            ? (elapsed - previous).TotalSeconds
-            : 1d / 60d;
-        _lastRenderingTime = elapsed;
-        return Math.Clamp(seconds, 1d / 120d, 1d / 30d);
-    }
-
-    private static void StepSpring(ref double value, ref double velocity, double target, double stiffness, double damping, double seconds)
-    {
-        var displacement = target - value;
-        var acceleration = (displacement * stiffness) - (velocity * damping);
-        velocity += acceleration * seconds;
-        value += velocity * seconds;
-
-        if (Math.Abs(target - value) < 0.0008 && Math.Abs(velocity) < 0.0008)
-        {
-            value = target;
-            velocity = 0;
-        }
+        var clamped = Math.Clamp(value, 0, 1);
+        return clamped * clamped * (3 - (2 * clamped));
     }
 
     private PointCollection BuildSpectrumPoints(double width, double height, bool mirrored)
@@ -745,11 +715,6 @@ public partial class MainWindow : Window
         return Math.Exp(-Math.Pow((value - center) / spread, 2));
     }
 
-    private static double SmoothStep(double value)
-    {
-        return value * value * (3 - (2 * value));
-    }
-
     private void SetSpectrumIdle()
     {
         var idle = BuildSpectrumBaselinePoints();
@@ -792,7 +757,10 @@ public partial class MainWindow : Window
             Children = new TransformCollection { scale, translate }
         };
 
-        state = new IconAnimationState(scale, translate);
+        var hoverBackplate = FindVisualChildren<Border>(button)
+            .FirstOrDefault(border => border.Tag as string == "DockItemHoverBackplate");
+
+        state = new IconAnimationState(scale, translate, hoverBackplate);
         _iconAnimationStates[button] = state;
         return state;
     }
@@ -832,20 +800,20 @@ public partial class MainWindow : Window
 
     private sealed class IconAnimationState
     {
-        public IconAnimationState(ScaleTransform scaleTransform, TranslateTransform translateTransform)
+        public IconAnimationState(ScaleTransform scaleTransform, TranslateTransform translateTransform, Border? hoverBackplate)
         {
             ScaleTransform = scaleTransform;
             TranslateTransform = translateTransform;
+            HoverBackplate = hoverBackplate;
         }
 
         public ScaleTransform ScaleTransform { get; }
         public TranslateTransform TranslateTransform { get; }
+        public Border? HoverBackplate { get; }
         public double Scale = 1;
-        public double ScaleVelocity;
+        public double TranslateX;
         public double TranslateY;
-        public double TranslateVelocity;
-        public double FocusPulse;
-        public bool WasFocused;
+        public double GlowOpacity;
     }
 
     private async Task CaptureSnapshotAndShutdownAsync(string path)
