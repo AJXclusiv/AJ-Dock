@@ -494,17 +494,31 @@
                                         Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                         Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CornerRadius="12"
-                                        Background="#14FFFFFF"
-                                        BorderBrush="#20FFFFFF"
+                                        Background="#10FFFFFF"
+                                        BorderBrush="#18FFFFFF"
                                         BorderThickness="1"
                                         Opacity="0"
                                         IsHitTestVisible="False">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="12"
+                                        <DropShadowEffect BlurRadius="8"
                                                           ShadowDepth="0"
                                                           Color="#55D8FF"
-                                                          Opacity="0.34" />
+                                                          Opacity="0.24" />
                                     </Border.Effect>
+                                </Border>
+                                <Border Tag="DockItemHoverSheen"
+                                        Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CornerRadius="12"
+                                        Opacity="0"
+                                        IsHitTestVisible="False">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#38FFFFFF" Offset="0" />
+                                            <GradientStop Color="#08FFFFFF" Offset="0.42" />
+                                            <GradientStop Color="#00FFFFFF" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
                                 </Border>
                                 <Image Source="{Binding Icon}"
                                        Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"

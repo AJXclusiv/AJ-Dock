@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     private readonly WindowEffectService _windowEffectService;
     private readonly string? _snapshotPath;
     private readonly Dictionary<Button, IconAnimationState> _iconAnimationStates = new();
+    private readonly List<Button> _dockItemButtonCache = [];
     private readonly DispatcherTimer _previewCloseTimer;
     private readonly DispatcherTimer _smartHideTimer;
     private Point? _lastDockMousePosition;
@@ -524,9 +525,7 @@ public partial class MainWindow : Window
     {
         UpdateSpotifySpectrum();
 
-        var buttons = FindVisualChildren<Button>(DockItems)
-            .Where(button => button.DataContext is DockItemViewModel)
-            .ToList();
+        var buttons = GetDockItemButtons();
 
         if (buttons.Count == 0)
         {
@@ -534,8 +533,10 @@ public partial class MainWindow : Window
         }
 
         var pointer = _isPointerOverDock ? Mouse.GetPosition(DockItems) : _lastDockMousePosition;
-        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.15, 118);
-        var settle = Math.Clamp(1 - Math.Exp(-62_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.86, 1);
+        var iconSize = _viewModel.Settings.IconSize;
+        var influenceRadius = Math.Max(iconSize * 1.78, 84);
+        var broadRadius = Math.Max(iconSize * 2.65, 126);
+        var response = _isPointerOverDock ? 1d : 0.68;
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
         {
@@ -555,27 +556,31 @@ public partial class MainWindow : Window
             var targetY = 0d;
             var targetX = 0d;
             var targetGlow = 0d;
+            var targetFocus = 0d;
             var distance = double.MaxValue;
 
             if (_isPointerOverDock && pointer is { } position)
             {
                 var center = GetLayoutCenter(button, DockItems);
                 distance = Math.Abs(position.X - center.X);
-                var normalized = Math.Clamp(distance / influenceRadius, 0, 1);
-                var falloff = SmoothStep((Math.Cos(normalized * Math.PI) + 1) / 2);
+                var focusFalloff = Gaussian(distance, 0, influenceRadius);
+                var broadFalloff = Gaussian(distance, 0, broadRadius);
+                var falloff = SmoothStep(Math.Clamp((focusFalloff * 0.86) + (broadFalloff * 0.2), 0, 1));
                 targetScale = 1 + ((_viewModel.Settings.MagnificationAmount - 1) * falloff);
-                targetY = -(_viewModel.Settings.IconSize * (targetScale - 1) * 0.14);
-                targetGlow = Math.Pow(falloff, 1.6) * 0.46;
+                targetY = -(iconSize * (targetScale - 1) * 0.1);
+                targetGlow = Math.Pow(falloff, 1.45) * 0.38;
+                targetFocus = Math.Pow(focusFalloff, 1.18);
 
                 var direction = Math.Sign(center.X - position.X);
-                var repel = Math.Sin(Math.Clamp(normalized, 0, 1) * Math.PI) * falloff;
-                targetX = direction * Math.Min(_viewModel.Settings.IconSpacing * 0.26, 6) * repel;
+                var repel = Math.Sin(Math.Clamp(distance / broadRadius, 0, 1) * Math.PI) * falloff;
+                targetX = direction * Math.Min(_viewModel.Settings.IconSpacing * 0.18, 4) * repel;
             }
 
-            state.Scale += (targetScale - state.Scale) * settle;
-            state.TranslateY += (targetY - state.TranslateY) * Math.Min(1, settle * 1.18);
-            state.TranslateX += (targetX - state.TranslateX) * Math.Min(1, settle * 1.22);
-            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(1, settle * 1.8);
+            state.Scale += (targetScale - state.Scale) * response;
+            state.TranslateY += (targetY - state.TranslateY) * response;
+            state.TranslateX += (targetX - state.TranslateX) * response;
+            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(1, response * 1.15);
+            state.FocusOpacity += (targetFocus - state.FocusOpacity) * response;
 
             if (!_isPointerOverDock && Math.Abs(state.Scale - 1) < 0.012)
             {
@@ -583,6 +588,7 @@ public partial class MainWindow : Window
                 state.TranslateX = 0;
                 state.TranslateY = 0;
                 state.GlowOpacity = 0;
+                state.FocusOpacity = 0;
             }
 
             var displayScale = Math.Clamp(state.Scale, 0.92, DockSettings.MaxMagnification + 0.04);
@@ -593,6 +599,11 @@ public partial class MainWindow : Window
             if (state.HoverBackplate is not null)
             {
                 state.HoverBackplate.Opacity = state.GlowOpacity;
+            }
+
+            if (state.HoverSheen is not null)
+            {
+                state.HoverSheen.Opacity = state.FocusOpacity * 0.42;
             }
 
             SetDockItemZIndex(button, Math.Max(0, (int)Math.Round(displayScale * 100)));
@@ -641,6 +652,19 @@ public partial class MainWindow : Window
         SpotifyRightSpectrumEcho.Opacity = SpotifyLeftSpectrumEcho.Opacity;
         SpotifyLeftSpectrumGlow.Opacity = 1;
         SpotifyRightSpectrumGlow.Opacity = SpotifyLeftSpectrumGlow.Opacity;
+    }
+
+    private IReadOnlyList<Button> GetDockItemButtons()
+    {
+        if (_dockItemButtonCache.Count == DockItems.Items.Count && _dockItemButtonCache.Count > 0)
+        {
+            return _dockItemButtonCache;
+        }
+
+        _dockItemButtonCache.Clear();
+        _dockItemButtonCache.AddRange(FindVisualChildren<Button>(DockItems)
+            .Where(button => button.DataContext is DockItemViewModel));
+        return _dockItemButtonCache;
     }
 
     private static double SmoothStep(double value)
@@ -782,10 +806,11 @@ public partial class MainWindow : Window
             Children = new TransformCollection { scale, translate }
         };
 
-        var hoverBackplate = FindVisualChildren<Border>(button)
-            .FirstOrDefault(border => border.Tag as string == "DockItemHoverBackplate");
+        var borders = FindVisualChildren<Border>(button).ToList();
+        var hoverBackplate = borders.FirstOrDefault(border => border.Tag as string == "DockItemHoverBackplate");
+        var hoverSheen = borders.FirstOrDefault(border => border.Tag as string == "DockItemHoverSheen");
 
-        state = new IconAnimationState(scale, translate, hoverBackplate);
+        state = new IconAnimationState(scale, translate, hoverBackplate, hoverSheen);
         _iconAnimationStates[button] = state;
         return state;
     }
@@ -825,20 +850,23 @@ public partial class MainWindow : Window
 
     private sealed class IconAnimationState
     {
-        public IconAnimationState(ScaleTransform scaleTransform, TranslateTransform translateTransform, Border? hoverBackplate)
+        public IconAnimationState(ScaleTransform scaleTransform, TranslateTransform translateTransform, Border? hoverBackplate, Border? hoverSheen)
         {
             ScaleTransform = scaleTransform;
             TranslateTransform = translateTransform;
             HoverBackplate = hoverBackplate;
+            HoverSheen = hoverSheen;
         }
 
         public ScaleTransform ScaleTransform { get; }
         public TranslateTransform TranslateTransform { get; }
         public Border? HoverBackplate { get; }
+        public Border? HoverSheen { get; }
         public double Scale = 1;
         public double TranslateX;
         public double TranslateY;
         public double GlowOpacity;
+        public double FocusOpacity;
     }
 
     private async Task CaptureSnapshotAndShutdownAsync(string path)
