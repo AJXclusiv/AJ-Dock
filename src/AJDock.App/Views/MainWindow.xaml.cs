@@ -540,8 +540,8 @@ public partial class MainWindow : Window
 
         var pointer = _isPointerOverDock ? PredictPointer(Mouse.GetPosition(DockItems), e) : _lastDockMousePosition;
         var iconSize = _viewModel.Settings.IconSize;
-        var influenceRadius = Math.Max(iconSize * 1.78, 84);
-        var broadRadius = Math.Max(iconSize * 2.65, 126);
+        var influenceRadius = Math.Max(iconSize * 1.58, 76);
+        var broadRadius = Math.Max(iconSize * 2.35, 112);
         var response = _isPointerOverDock ? 1d : 0.68;
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
@@ -571,11 +571,11 @@ public partial class MainWindow : Window
                 distance = Math.Abs(position.X - center.X);
                 var focusFalloff = Gaussian(distance, 0, influenceRadius);
                 var broadFalloff = Gaussian(distance, 0, broadRadius);
-                var falloff = SmoothStep(Math.Clamp((focusFalloff * 0.86) + (broadFalloff * 0.2), 0, 1));
+                var falloff = SmoothStep(Math.Clamp((focusFalloff * 0.96) + (broadFalloff * 0.14), 0, 1));
                 targetScale = 1 + ((_viewModel.Settings.MagnificationAmount - 1) * falloff);
                 targetY = -(iconSize * (targetScale - 1) * 0.1);
                 targetGlow = Math.Pow(falloff, 1.45) * 0.38;
-                targetFocus = Math.Pow(focusFalloff, 1.18);
+                targetFocus = Math.Pow(focusFalloff, 1.05);
 
                 var direction = Math.Sign(center.X - position.X);
                 var repel = Math.Sin(Math.Clamp(distance / broadRadius, 0, 1) * Math.PI) * falloff;
@@ -677,7 +677,7 @@ public partial class MainWindow : Window
         _lastAnimationPointer = currentPointer;
         _lastAnimationTime = renderingArgs.RenderingTime;
 
-        var lead = Math.Clamp(_pointerVelocityX * 0.018, -22, 22);
+        var lead = Math.Clamp(_pointerVelocityX * 0.03, -38, 38);
         return new Point(currentPointer.X + lead, currentPointer.Y);
     }
 
