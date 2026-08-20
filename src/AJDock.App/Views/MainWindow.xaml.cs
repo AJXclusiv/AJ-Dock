@@ -24,6 +24,7 @@ public partial class MainWindow : Window
     private readonly string? _snapshotPath;
     private readonly Dictionary<Button, IconAnimationState> _iconAnimationStates = new();
     private readonly List<Button> _dockItemButtonCache = [];
+    private readonly Dictionary<Button, double> _dockItemCenterCache = new();
     private readonly DispatcherTimer _previewCloseTimer;
     private readonly DispatcherTimer _smartHideTimer;
     private Point? _lastDockMousePosition;
@@ -65,6 +66,7 @@ public partial class MainWindow : Window
         SourceInitialized += (_, _) => _windowEffectService.Apply(this, useBackdrop: false);
         Loaded += (_, _) =>
         {
+            InvalidateDockItemRenderCache();
             ApplyVisualSettings();
             PositionDock();
             RunStartupAnimation();
@@ -74,7 +76,11 @@ public partial class MainWindow : Window
                 _ = CaptureSnapshotAndShutdownAsync(_snapshotPath);
             }
         };
-        SizeChanged += (_, _) => PositionDock();
+        SizeChanged += (_, _) =>
+        {
+            InvalidateDockItemRenderCache();
+            PositionDock();
+        };
         Closing += (_, _) =>
         {
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
@@ -84,10 +90,12 @@ public partial class MainWindow : Window
         };
         _viewModel.RequestLayoutUpdate += (_, _) =>
         {
+            InvalidateDockItemRenderCache();
             ApplyVisualSettings();
             PositionDock();
         };
         _viewModel.RequestOpenSettings += (_, _) => OpenSettings();
+        _viewModel.Items.CollectionChanged += (_, _) => InvalidateDockItemRenderCache();
         CompositionTarget.Rendering += CompositionTarget_Rendering;
     }
 
@@ -549,7 +557,7 @@ public partial class MainWindow : Window
             focusedButton = buttons
                 .OrderBy(button =>
                 {
-                    var center = GetLayoutCenter(button, DockItems);
+                    var center = new Point(GetDockItemCenterX(button), button.ActualHeight / 2);
                     return Math.Abs(focusPosition.X - center.X);
                 })
                 .FirstOrDefault();
@@ -567,7 +575,7 @@ public partial class MainWindow : Window
 
             if (_isPointerOverDock && pointer is { } position)
             {
-                var center = GetLayoutCenter(button, DockItems);
+                var center = new Point(GetDockItemCenterX(button), button.ActualHeight / 2);
                 distance = Math.Abs(position.X - center.X);
                 var focusFalloff = Gaussian(distance, 0, influenceRadius);
                 var broadFalloff = Gaussian(distance, 0, broadRadius);
@@ -689,9 +697,28 @@ public partial class MainWindow : Window
         }
 
         _dockItemButtonCache.Clear();
+        _dockItemCenterCache.Clear();
         _dockItemButtonCache.AddRange(FindVisualChildren<Button>(DockItems)
             .Where(button => button.DataContext is DockItemViewModel));
         return _dockItemButtonCache;
+    }
+
+    private void InvalidateDockItemRenderCache()
+    {
+        _dockItemButtonCache.Clear();
+        _dockItemCenterCache.Clear();
+    }
+
+    private double GetDockItemCenterX(Button button)
+    {
+        if (_dockItemCenterCache.TryGetValue(button, out var cached))
+        {
+            return cached;
+        }
+
+        var center = GetLayoutCenter(button, DockItems).X;
+        _dockItemCenterCache[button] = center;
+        return center;
     }
 
     private static double SmoothStep(double value)

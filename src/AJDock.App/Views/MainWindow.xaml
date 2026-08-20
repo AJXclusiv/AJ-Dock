@@ -504,14 +504,7 @@
                                         BorderThickness="1"
                                         Opacity="0"
                                         CacheMode="BitmapCache"
-                                        IsHitTestVisible="False">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="8"
-                                                          ShadowDepth="0"
-                                                          Color="#55D8FF"
-                                                          Opacity="0.24" />
-                                    </Border.Effect>
-                                </Border>
+                                        IsHitTestVisible="False" />
                                 <Border Tag="DockItemHoverSheen"
                                         Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                         Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
