@@ -23,22 +23,29 @@ public sealed class ApplicationLauncher : IApplicationLauncher
             return;
         }
 
-        if (File.Exists(app.TargetPath))
+        try
         {
-            Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{app.TargetPath}\"")
+            if (File.Exists(app.TargetPath))
             {
-                UseShellExecute = true
-            });
-            return;
-        }
+                Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{app.TargetPath}\"")
+                {
+                    UseShellExecute = true
+                });
+                return;
+            }
 
-        var directory = Path.GetDirectoryName(app.TargetPath);
-        if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
-        {
-            Process.Start(new ProcessStartInfo(directory)
+            var directory = Path.GetDirectoryName(app.TargetPath);
+            if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
             {
-                UseShellExecute = true
-            });
+                Process.Start(new ProcessStartInfo(directory)
+                {
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception exception)
+        {
+            AppLog.Write($"Could not open file location for {app.DisplayName}.", exception);
         }
     }
 
@@ -49,23 +56,30 @@ public sealed class ApplicationLauncher : IApplicationLauncher
             return;
         }
 
-        var info = new ProcessStartInfo(app.TargetPath)
+        try
         {
-            UseShellExecute = true,
-            WorkingDirectory = TryGetWorkingDirectory(app.TargetPath)
-        };
+            var info = new ProcessStartInfo(app.TargetPath)
+            {
+                UseShellExecute = true,
+                WorkingDirectory = TryGetWorkingDirectory(app.TargetPath)
+            };
 
-        if (!string.IsNullOrWhiteSpace(app.Arguments))
-        {
-            info.Arguments = app.Arguments;
+            if (!string.IsNullOrWhiteSpace(app.Arguments))
+            {
+                info.Arguments = app.Arguments;
+            }
+
+            if (!string.IsNullOrWhiteSpace(verb))
+            {
+                info.Verb = verb;
+            }
+
+            Process.Start(info);
         }
-
-        if (!string.IsNullOrWhiteSpace(verb))
+        catch (Exception exception)
         {
-            info.Verb = verb;
+            AppLog.Write($"Could not launch {app.DisplayName} from {app.TargetPath}.", exception);
         }
-
-        Process.Start(info);
     }
 
     private static string? TryGetWorkingDirectory(string path)
