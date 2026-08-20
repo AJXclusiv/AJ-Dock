@@ -533,16 +533,16 @@ public partial class MainWindow : Window
             return;
         }
 
-        var pointer = _lastDockMousePosition;
-        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.35, 128);
-        var settle = Math.Clamp(1 - Math.Exp(-42_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.58, 0.96);
+        var pointer = _isPointerOverDock ? Mouse.GetPosition(DockItems) : _lastDockMousePosition;
+        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.15, 118);
+        var settle = Math.Clamp(1 - Math.Exp(-62_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.86, 1);
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
         {
             focusedButton = buttons
                 .OrderBy(button =>
                 {
-                    var center = button.TranslatePoint(new Point(button.ActualWidth / 2, button.ActualHeight / 2), DockItems);
+                    var center = GetLayoutCenter(button, DockItems);
                     return Math.Abs(focusPosition.X - center.X);
                 })
                 .FirstOrDefault();
@@ -559,7 +559,7 @@ public partial class MainWindow : Window
 
             if (_isPointerOverDock && pointer is { } position)
             {
-                var center = button.TranslatePoint(new Point(button.ActualWidth / 2, button.ActualHeight / 2), DockItems);
+                var center = GetLayoutCenter(button, DockItems);
                 distance = Math.Abs(position.X - center.X);
                 var normalized = Math.Clamp(distance / influenceRadius, 0, 1);
                 var falloff = SmoothStep((Math.Cos(normalized * Math.PI) + 1) / 2);
@@ -573,8 +573,8 @@ public partial class MainWindow : Window
             }
 
             state.Scale += (targetScale - state.Scale) * settle;
-            state.TranslateY += (targetY - state.TranslateY) * Math.Min(0.98, settle * 1.16);
-            state.TranslateX += (targetX - state.TranslateX) * Math.Min(0.98, settle * 1.2);
+            state.TranslateY += (targetY - state.TranslateY) * Math.Min(1, settle * 1.18);
+            state.TranslateX += (targetX - state.TranslateX) * Math.Min(1, settle * 1.22);
             state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(1, settle * 1.8);
 
             if (!_isPointerOverDock && Math.Abs(state.Scale - 1) < 0.012)
@@ -647,6 +647,23 @@ public partial class MainWindow : Window
     {
         var clamped = Math.Clamp(value, 0, 1);
         return clamped * clamped * (3 - (2 * clamped));
+    }
+
+    private static Point GetLayoutCenter(FrameworkElement element, Visual ancestor)
+    {
+        var x = element.ActualWidth / 2;
+        var y = element.ActualHeight / 2;
+        DependencyObject? current = element;
+
+        while (current is Visual visual && !ReferenceEquals(visual, ancestor))
+        {
+            var offset = VisualTreeHelper.GetOffset(visual);
+            x += offset.X;
+            y += offset.Y;
+            current = VisualTreeHelper.GetParent(visual);
+        }
+
+        return new Point(x, y);
     }
 
     private PointCollection BuildSpectrumPoints(double width, double height, bool mirrored)
