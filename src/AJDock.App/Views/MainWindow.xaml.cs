@@ -534,8 +534,8 @@ public partial class MainWindow : Window
         }
 
         var pointer = _lastDockMousePosition;
-        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.6, 140);
-        var settle = Math.Clamp(1 - Math.Exp(-28_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.34, 0.82);
+        var influenceRadius = Math.Max(_viewModel.Settings.IconSize * 2.35, 128);
+        var settle = Math.Clamp(1 - Math.Exp(-42_000 / Math.Max(_viewModel.Settings.AnimationSpeed, 50) / 60), 0.58, 0.96);
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
         {
@@ -564,18 +564,26 @@ public partial class MainWindow : Window
                 var normalized = Math.Clamp(distance / influenceRadius, 0, 1);
                 var falloff = SmoothStep((Math.Cos(normalized * Math.PI) + 1) / 2);
                 targetScale = 1 + ((_viewModel.Settings.MagnificationAmount - 1) * falloff);
-                targetY = -(_viewModel.Settings.IconSize * (targetScale - 1) * 0.18);
-                targetGlow = Math.Pow(falloff, 1.8) * 0.78;
+                targetY = -(_viewModel.Settings.IconSize * (targetScale - 1) * 0.14);
+                targetGlow = Math.Pow(falloff, 1.6) * 0.46;
 
                 var direction = Math.Sign(center.X - position.X);
                 var repel = Math.Sin(Math.Clamp(normalized, 0, 1) * Math.PI) * falloff;
-                targetX = direction * Math.Min(_viewModel.Settings.IconSpacing * 0.38, 9) * repel;
+                targetX = direction * Math.Min(_viewModel.Settings.IconSpacing * 0.26, 6) * repel;
             }
 
             state.Scale += (targetScale - state.Scale) * settle;
-            state.TranslateY += (targetY - state.TranslateY) * Math.Min(0.9, settle * 1.08);
-            state.TranslateX += (targetX - state.TranslateX) * Math.Min(0.9, settle * 1.12);
-            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(0.94, settle * 1.65);
+            state.TranslateY += (targetY - state.TranslateY) * Math.Min(0.98, settle * 1.16);
+            state.TranslateX += (targetX - state.TranslateX) * Math.Min(0.98, settle * 1.2);
+            state.GlowOpacity += (targetGlow - state.GlowOpacity) * Math.Min(1, settle * 1.8);
+
+            if (!_isPointerOverDock && Math.Abs(state.Scale - 1) < 0.012)
+            {
+                state.Scale = 1;
+                state.TranslateX = 0;
+                state.TranslateY = 0;
+                state.GlowOpacity = 0;
+            }
 
             var displayScale = Math.Clamp(state.Scale, 0.92, DockSettings.MaxMagnification + 0.04);
             state.ScaleTransform.ScaleX = displayScale;

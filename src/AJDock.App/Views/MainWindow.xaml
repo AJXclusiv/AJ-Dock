@@ -493,17 +493,17 @@
                                 <Border Tag="DockItemHoverBackplate"
                                         Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                         Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CornerRadius="14"
-                                        Background="#1DFFFFFF"
-                                        BorderBrush="#2CFFFFFF"
+                                        CornerRadius="12"
+                                        Background="#14FFFFFF"
+                                        BorderBrush="#20FFFFFF"
                                         BorderThickness="1"
                                         Opacity="0"
                                         IsHitTestVisible="False">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="22"
+                                        <DropShadowEffect BlurRadius="12"
                                                           ShadowDepth="0"
                                                           Color="#55D8FF"
-                                                          Opacity="0.58" />
+                                                          Opacity="0.34" />
                                     </Border.Effect>
                                 </Border>
                                 <Image Source="{Binding Icon}"
