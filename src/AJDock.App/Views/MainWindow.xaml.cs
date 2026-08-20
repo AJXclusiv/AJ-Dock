@@ -27,6 +27,9 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _previewCloseTimer;
     private readonly DispatcherTimer _smartHideTimer;
     private Point? _lastDockMousePosition;
+    private Point? _lastAnimationPointer;
+    private TimeSpan? _lastAnimationTime;
+    private double _pointerVelocityX;
     private Point? _dockItemDragStart;
     private SettingsWindow? _settingsWindow;
     private bool _isHidden;
@@ -137,6 +140,9 @@ public partial class MainWindow : Window
     {
         _isPointerOverDock = false;
         _lastDockMousePosition = null;
+        _lastAnimationPointer = null;
+        _lastAnimationTime = null;
+        _pointerVelocityX = 0;
         HideHoverLabel();
         if (_viewModel.Settings.AutoHide)
         {
@@ -532,7 +538,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var pointer = _isPointerOverDock ? Mouse.GetPosition(DockItems) : _lastDockMousePosition;
+        var pointer = _isPointerOverDock ? PredictPointer(Mouse.GetPosition(DockItems), e) : _lastDockMousePosition;
         var iconSize = _viewModel.Settings.IconSize;
         var influenceRadius = Math.Max(iconSize * 1.78, 84);
         var broadRadius = Math.Max(iconSize * 2.65, 126);
@@ -652,6 +658,27 @@ public partial class MainWindow : Window
         SpotifyRightSpectrumEcho.Opacity = SpotifyLeftSpectrumEcho.Opacity;
         SpotifyLeftSpectrumGlow.Opacity = 1;
         SpotifyRightSpectrumGlow.Opacity = SpotifyLeftSpectrumGlow.Opacity;
+    }
+
+    private Point PredictPointer(Point currentPointer, EventArgs args)
+    {
+        if (args is not RenderingEventArgs renderingArgs)
+        {
+            return currentPointer;
+        }
+
+        if (_lastAnimationPointer is { } previousPointer && _lastAnimationTime is { } previousTime)
+        {
+            var seconds = Math.Clamp((renderingArgs.RenderingTime - previousTime).TotalSeconds, 1d / 240d, 1d / 30d);
+            var instantVelocity = (currentPointer.X - previousPointer.X) / seconds;
+            _pointerVelocityX = (_pointerVelocityX * 0.35) + (instantVelocity * 0.65);
+        }
+
+        _lastAnimationPointer = currentPointer;
+        _lastAnimationTime = renderingArgs.RenderingTime;
+
+        var lead = Math.Clamp(_pointerVelocityX * 0.018, -22, 22);
+        return new Point(currentPointer.X + lead, currentPointer.Y);
     }
 
     private IReadOnlyList<Button> GetDockItemButtons()

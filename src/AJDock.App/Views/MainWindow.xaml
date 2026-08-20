@@ -353,6 +353,8 @@
                                 CommandParameter="{Binding}"
                                 Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                                 AllowDrop="True"
+                                SnapsToDevicePixels="False"
+                                UseLayoutRounding="False"
                                 MouseEnter="DockItem_MouseEnter"
                                 MouseLeave="DockItem_MouseLeave"
                                 PreviewMouseLeftButtonDown="DockItem_PreviewMouseLeftButtonDown"
@@ -365,6 +367,9 @@
                                     <TranslateTransform X="0" Y="0" />
                                 </TransformGroup>
                             </Button.RenderTransform>
+                            <Button.CacheMode>
+                                <BitmapCache RenderAtScale="2" EnableClearType="False" />
+                            </Button.CacheMode>
                             <Button.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Style="{StaticResource DockMenuItem}"
@@ -498,6 +503,7 @@
                                         BorderBrush="#18FFFFFF"
                                         BorderThickness="1"
                                         Opacity="0"
+                                        CacheMode="BitmapCache"
                                         IsHitTestVisible="False">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="8"
@@ -511,6 +517,7 @@
                                         Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CornerRadius="12"
                                         Opacity="0"
+                                        CacheMode="BitmapCache"
                                         IsHitTestVisible="False">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -524,9 +531,13 @@
                                        Width="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                        Height="{Binding DataContext.Settings.IconSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                        Stretch="Uniform"
-                                       RenderOptions.BitmapScalingMode="Fant"
-                                       SnapsToDevicePixels="True"
-                                       UseLayoutRounding="True" />
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       SnapsToDevicePixels="False"
+                                       UseLayoutRounding="False">
+                                    <Image.CacheMode>
+                                        <BitmapCache RenderAtScale="2" EnableClearType="False" />
+                                    </Image.CacheMode>
+                                </Image>
                                 <Ellipse Width="6"
                                          Height="6"
                                          Fill="#9CF8FF"
