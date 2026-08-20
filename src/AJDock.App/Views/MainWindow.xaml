@@ -368,7 +368,7 @@
                                 </TransformGroup>
                             </Button.RenderTransform>
                             <Button.CacheMode>
-                                <BitmapCache RenderAtScale="2" EnableClearType="False" />
+                                <BitmapCache RenderAtScale="1.5" EnableClearType="False" />
                             </Button.CacheMode>
                             <Button.ContextMenu>
                                 <ContextMenu>
@@ -528,7 +528,7 @@
                                        SnapsToDevicePixels="False"
                                        UseLayoutRounding="False">
                                     <Image.CacheMode>
-                                        <BitmapCache RenderAtScale="2" EnableClearType="False" />
+                                        <BitmapCache RenderAtScale="1.5" EnableClearType="False" />
                                     </Image.CacheMode>
                                 </Image>
                                 <Ellipse Width="6"

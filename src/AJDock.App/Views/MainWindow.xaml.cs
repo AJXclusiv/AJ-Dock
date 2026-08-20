@@ -24,13 +24,9 @@ public partial class MainWindow : Window
     private readonly string? _snapshotPath;
     private readonly Dictionary<Button, IconAnimationState> _iconAnimationStates = new();
     private readonly List<Button> _dockItemButtonCache = [];
-    private readonly Dictionary<Button, double> _dockItemCenterCache = new();
     private readonly DispatcherTimer _previewCloseTimer;
     private readonly DispatcherTimer _smartHideTimer;
     private Point? _lastDockMousePosition;
-    private Point? _lastAnimationPointer;
-    private TimeSpan? _lastAnimationTime;
-    private double _pointerVelocityX;
     private Point? _dockItemDragStart;
     private SettingsWindow? _settingsWindow;
     private bool _isHidden;
@@ -148,9 +144,6 @@ public partial class MainWindow : Window
     {
         _isPointerOverDock = false;
         _lastDockMousePosition = null;
-        _lastAnimationPointer = null;
-        _lastAnimationTime = null;
-        _pointerVelocityX = 0;
         HideHoverLabel();
         if (_viewModel.Settings.AutoHide)
         {
@@ -546,18 +539,18 @@ public partial class MainWindow : Window
             return;
         }
 
-        var pointer = _isPointerOverDock ? PredictPointer(Mouse.GetPosition(DockItems), e) : _lastDockMousePosition;
+        var pointer = _isPointerOverDock ? Mouse.GetPosition(DockItems) : _lastDockMousePosition;
         var iconSize = _viewModel.Settings.IconSize;
-        var influenceRadius = Math.Max(iconSize * 1.58, 76);
-        var broadRadius = Math.Max(iconSize * 2.35, 112);
-        var response = _isPointerOverDock ? 1d : 0.68;
+        var influenceRadius = Math.Max(iconSize * 1.72, 82);
+        var broadRadius = Math.Max(iconSize * 2.42, 116);
+        var response = _isPointerOverDock ? 0.92 : 0.64;
         var focusedButton = buttons.FirstOrDefault(button => button.IsMouseOver);
         if (focusedButton is null && _isPointerOverDock && pointer is { } focusPosition)
         {
             focusedButton = buttons
                 .OrderBy(button =>
                 {
-                    var center = new Point(GetDockItemCenterX(button), button.ActualHeight / 2);
+                    var center = GetLayoutCenter(button, DockItems);
                     return Math.Abs(focusPosition.X - center.X);
                 })
                 .FirstOrDefault();
@@ -575,7 +568,7 @@ public partial class MainWindow : Window
 
             if (_isPointerOverDock && pointer is { } position)
             {
-                var center = new Point(GetDockItemCenterX(button), button.ActualHeight / 2);
+                var center = GetLayoutCenter(button, DockItems);
                 distance = Math.Abs(position.X - center.X);
                 var focusFalloff = Gaussian(distance, 0, influenceRadius);
                 var broadFalloff = Gaussian(distance, 0, broadRadius);
@@ -668,27 +661,6 @@ public partial class MainWindow : Window
         SpotifyRightSpectrumGlow.Opacity = SpotifyLeftSpectrumGlow.Opacity;
     }
 
-    private Point PredictPointer(Point currentPointer, EventArgs args)
-    {
-        if (args is not RenderingEventArgs renderingArgs)
-        {
-            return currentPointer;
-        }
-
-        if (_lastAnimationPointer is { } previousPointer && _lastAnimationTime is { } previousTime)
-        {
-            var seconds = Math.Clamp((renderingArgs.RenderingTime - previousTime).TotalSeconds, 1d / 240d, 1d / 30d);
-            var instantVelocity = (currentPointer.X - previousPointer.X) / seconds;
-            _pointerVelocityX = (_pointerVelocityX * 0.35) + (instantVelocity * 0.65);
-        }
-
-        _lastAnimationPointer = currentPointer;
-        _lastAnimationTime = renderingArgs.RenderingTime;
-
-        var lead = Math.Clamp(_pointerVelocityX * 0.03, -38, 38);
-        return new Point(currentPointer.X + lead, currentPointer.Y);
-    }
-
     private IReadOnlyList<Button> GetDockItemButtons()
     {
         if (_dockItemButtonCache.Count == DockItems.Items.Count && _dockItemButtonCache.Count > 0)
@@ -697,7 +669,6 @@ public partial class MainWindow : Window
         }
 
         _dockItemButtonCache.Clear();
-        _dockItemCenterCache.Clear();
         _dockItemButtonCache.AddRange(FindVisualChildren<Button>(DockItems)
             .Where(button => button.DataContext is DockItemViewModel));
         return _dockItemButtonCache;
@@ -706,19 +677,6 @@ public partial class MainWindow : Window
     private void InvalidateDockItemRenderCache()
     {
         _dockItemButtonCache.Clear();
-        _dockItemCenterCache.Clear();
-    }
-
-    private double GetDockItemCenterX(Button button)
-    {
-        if (_dockItemCenterCache.TryGetValue(button, out var cached))
-        {
-            return cached;
-        }
-
-        var center = GetLayoutCenter(button, DockItems).X;
-        _dockItemCenterCache[button] = center;
-        return center;
     }
 
     private static double SmoothStep(double value)
