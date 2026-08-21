@@ -1,10 +1,12 @@
+using AJDock.App.Services;
 using AJDock.Core.Models;
 
 var tests = new (string Name, Action Body)[]
 {
     ("DockSettings.Normalize clamps values", DockSettingsNormalizeClampsValues),
     ("PinnedApp.NormalizePath is stable", PinnedAppNormalizePathIsStable),
-    ("Running app matching uses normalized paths", RunningAppMatchingUsesNormalizedPaths)
+    ("Running app matching uses normalized paths", RunningAppMatchingUsesNormalizedPaths),
+    ("Notification badge parsing handles communicator titles", NotificationBadgeParsingHandlesCommunicatorTitles)
 };
 
 var failures = 0;
@@ -67,6 +69,15 @@ static void RunningAppMatchingUsesNormalizedPaths()
     var running = new RunningAppInfo { ExecutablePath = @"c:\windows\system32\NOTEPAD.exe" };
 
     AssertEqual(pinned.NormalizedTargetPath, running.NormalizedExecutablePath);
+}
+
+static void NotificationBadgeParsingHandlesCommunicatorTitles()
+{
+    AssertEqual(3, NotificationBadgeService.ExtractCount("(3) Discord"));
+    AssertEqual(12, NotificationBadgeService.ExtractCount("[12] Microsoft Teams"));
+    AssertEqual(7, NotificationBadgeService.ExtractCount("Inbox - 7 unread messages - Outlook"));
+    AssertEqual(2, NotificationBadgeService.ExtractCount("Microsoft Teams - 2 mentions"));
+    AssertEqual(0, NotificationBadgeService.ExtractCount("Microsoft Teams"));
 }
 
 static void Assert(bool condition, string message)

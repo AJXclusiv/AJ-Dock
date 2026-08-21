@@ -741,7 +741,7 @@ public sealed class DockViewModel : ObservableObject, IDisposable
 
             item.SetPinned(isPinned);
             var appWindows = runningApps ?? [];
-            var badgeText = _notificationBadgeService.GetBadgeText(appWindows);
+            var badgeText = _notificationBadgeService.GetBadgeText(item.App, appWindows);
             item.UpdateRunningState(appWindows, isPinned ? Math.Max(1, pinnedCount) : 1, badgeText);
         }
 
